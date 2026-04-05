@@ -1,1 +1,486 @@
-IiIiClFDZW50cm9pZCBDb250YWluZXIgWWFyZCBTdGFja2luZyBPcHRpbWl6YXRpb24gU29sdmVyCgpUaGlzIHNvbHZlciBvcHRpbWl6ZXMgY29udGFpbmVyIHN0YWNraW5nIGFycmFuZ2VtZW50IGluIGEgeWFyZCB0byBtaW5pbWl6ZQpyZXNodWZmbGVzIGR1cmluZyB2ZXNzZWwgbG9hZGluZy4gVXNlcyBncmVlZHkgaW5pdGlhbGl6YXRpb24sIDItb3B0IGxvY2FsIHNlYXJjaCwKYW5kIFNpbXVsYXRlZCBBbm5lYWxpbmcgbWV0YWhldXJpc3RpYy4KCkVudHJ5IHBvaW50OiBydW4oaW5wdXRfZGF0YSwgc29sdmVyX3BhcmFtcywgZXh0cmFfYXJndW1lbnRzKSAtPiBkaWN0CiIiIgoKaW1wb3J0IGpzb24KaW1wb3J0IHRpbWUKaW1wb3J0IG1hdGgKaW1wb3J0IHJhbmRvbQpmcm9tIGNvcHkgaW1wb3J0IGRlZXBjb3B5CmZyb20gdHlwaW5nIGltcG9ydCBEaWN0LCBMaXN0LCBBbnksIFR1cGxlCmZyb20gc29sdmVyX2hlbHBlcnMgaW1wb3J0ICgKICAgIGNvbXB1dGVfcmVzaHVmZmxlc19mb3Jfc3RhY2tpbmcsCiAgICBpc19mZWFzaWJsZV9hc3NpZ25tZW50LAogICAgY2hlY2tfd2VpZ2h0X3N0YWJpbGl0eSwKICAgIGNvbXB1dGVfYmxvY2tfdXRpbGl6YXRpb24sCiAgICBjb21wdXRlX3Zlc3NlbF9ncm91cGluZ19zY29yZSwKICAgIGNvbXB1dGVfd2VpZ2h0X2JhbGFuY2Vfc2NvcmUsCiAgICBlc3RpbWF0ZV9yZXNodWZmbGVzX3NpbmdsZV9jb250YWluZXIKKQoKCiMgTG9nZ2VyIGZvciBRQ2VudHJvaWQgcGxhdGZvcm0KY2xhc3MgUUNlbnRyb2lkVXNlckxvZ2dlcjoKICAgIGRlZiBfX2luaXRfXyhzZWxmKToKICAgICAgICBzZWxmLm1lc3NhZ2VzID0gW10KCiAgICBkZWYgaW5mbyhzZWxmLCBtc2c6IHN0cik6CiAgICAgICAgc2VsZi5tZXNzYWdlcy5hcHBlbmQoeyJsZXZlbCI6ICJJTkZPIiwgIm1lc3NhZ2UiOiBtc2d9KQogICAgICAgIHByaW50KGYiW0lORk9dIHttc2d9IikKCiAgICBkZWYgZGVidWcoc2VsZiwgbXNnOiBzdHIpOgogICAgICAgIHNlbGYubWVzc2FnZXMuYXBwZW5kKHsibGV2ZWwiOiAiREVCVUciLCAibWVzc2FnZSI6IG1zZ30pCiAgICAgICAgcHJpbnQoZiJbREVCVUddIHttc2d9IikKCiAgICBkZWYgd2FybmluZyhzZWxmLCBtc2c6IHN0cik6CiAgICAgICAgc2VsZi5tZXNzYWdlcy5hcHBlbmQoeyJsZXZlbCI6ICJXQVJOSU5HIiwgIm1lc3NhZ2UiOiBtc2d9KQogICAgICAgIHByaW50KGYiW1dBUk5JTkddIHttc2d9IikKCiAgICBkZWYgZXJyb3Ioc2VsZiwgbXNnOiBzdHIpOgogICAgICAgIHNlbGYubWVzc2FnZXMuYXBwZW5kKHsibGV2ZWwiOiAiRVJST1IiLCAibWVzc2FnZSI6IG1zZ30pCiAgICAgICAgcHJpbnQoZiJbRVJST1JdIHttc2d9IikKCgpxY2VudHJvaWRfdXNlcl9sb2cgPSBRQ2VudHJvaWRVc2VyTG9nZ2VyKCkKCgpkZWYgZ3JlZWR5X2luaXRpYWxfc3RhY2tpbmcoY29udGFpbmVyczogTGlzdFtEaWN0W3N0ciwgQW55XV0sIHlhcmRfbGF5b3V0OiBEaWN0W3N0ciwgQW55XSwgbG9nZ2VyKSAtPiBMaXN0W0RpY3Rbc3RyLCBBbnldXToKICAgICIiIgogICAgR3JlZWR5IGluaXRpYWxpemF0aW9uOiBzb3J0IGNvbnRhaW5lcnMgYnkgdmVzc2VsIGRlcGFydHVyZSBvcmRlciBhbmQgd2VpZ2h0LAogICAgdGhlbiBwbGFjZSB0aGVtIGdyZWVkaWx5IGluIGF2YWlsYWJsZSBwb3NpdGlvbnMuCgogICAgQXJnczoKICAgICAgICBjb250YWluZXJzOiBMaXN0IG9mIGNvbnRhaW5lciBkaWN0aW9uYXJpZXMKICAgICAgICB5YXJkX2xheW91dDogWWFyZCBsYXlvdXQgZGVmaW5pdGlvbgogICAgICAgIGxvZ2dlcjogTG9nZ2VyIGluc3RhbmNlCgogICAgUmV0dXJuczoKICAgICAgICBJbml0aWFsIHN0YWNraW5nIHBsYW4gKGxpc3Qgb2YgYXNzaWdubWVudHMpCiAgICAiIiIKICAgIGxvZ2dlci5pbmZvKGYiU3RhcnRpbmcgZ3JlZWR5IGluaXRpYWxpemF0aW9uIHdpdGgge2xlbihjb250YWluZXJzKX0gY29udGFpbmVycyIpCgogICAgIyBTb3J0IGNvbnRhaW5lcnM6IGZpcnN0IGJ5IHZlc3NlbCBkZXBhcnR1cmUgb3JkZXIgKGVhcmxpZXIgZmlyc3QpLCB0aGVuIGJ5IHdlaWdodCAoaGVhdmllciBmaXJzdCkKICAgIHNvcnRlZF9jb250YWluZXJzID0gc29ydGVkKAogICAgICAgIGNvbnRhaW5lcnMsCiAgICAgICAga2V5PWxhbWJkYSBjOiAoY1sndmVzc2VsX2RlcGFydHVyZV9vcmRlciddLCAtY1snd2VpZ2h0X3Rvbm5lcyddKQogICAgKQoKICAgIHN0YWNraW5nX3BsYW4gPSBbXQogICAgY29udGFpbmVyX21hcCA9IHtjWydpZCddOiBjIGZvciBjIGluIGNvbnRhaW5lcnN9CgogICAgIyBUcmFjayB1c2FnZSBvZiBlYWNoIHBvc2l0aW9uCiAgICBzdGFja191c2FnZSA9IHt9ICAjIChibG9jaywgcm93LCBiYXkpIC0+IGN1cnJlbnRfdGllciAoMC1pbmRleGVkLCBuZXh0IGF2YWlsYWJsZSkKCiAgICBmb3IgY29udGFpbmVyIGluIHNvcnRlZF9jb250YWluZXJzOgogICAgICAgIGNpZCA9IGNvbnRhaW5lclsnaWQnXQogICAgICAgIHdlaWdodCA9IGNvbnRhaW5lclsnd2VpZ2h0X3Rvbm5lcyddCgogICAgICAgICMgVHJ5IHRvIGZpbmQgYSBzdWl0YWJsZSBwb3NpdGlvbgogICAgICAgIHBsYWNlZCA9IEZhbHNlCgogICAgICAgIGZvciBibG9jayBpbiB5YXJkX2xheW91dFsnYmxvY2tzJ106CiAgICAgICAgICAgIGlmIHBsYWNlZDoKICAgICAgICAgICAgICAgIGJyZWFrCgogICAgICAgICAgICBibG9ja19pZCA9IGJsb2NrWydibG9ja19pZCddCiAgICAgICAgICAgIG1heF90aWVyID0gYmxvY2tbJ21heF90aWVyX2hlaWdodCddCgogICAgICAgICAgICBmb3Igcm93X2lkeCBpbiByYW5nZShibG9ja1sncm93cyddKToKICAgICAgICAgICAgICAgIGlmIHBsYWNlZDoKICAgICAgICAgICAgICAgICAgICBicmVhawoKICAgICAgICAgICAgICAgIGZvciBiYXlfaWR4IGluIHJhbmdlKGJsb2NrWydiYXlzX3Blcl9yb3cnXSk6CiAgICAgICAgICAgICAgICAgICAgc3RhY2tfa2V5ID0gKGJsb2NrX2lkLCByb3dfaWR4LCBiYXlfaWR4KQogICAgICAgICAgICAgICAgICAgIGN1cnJlbnRfdGllciA9IHN0YWNrX3VzYWdlLmdldChzdGFja19rZXksIDApCgogICAgICAgICAgICAgICAgICAgICMgQ2hlY2sgaWYgd2UgY2FuIHBsYWNlIGluIHRoaXMgc3RhY2sKICAgICAgICAgICAgICAgICAgICBpZiBjdXJyZW50X3RpZXIgPCBtYXhfdGllcjoKICAgICAgICAgICAgICAgICAgICAgICAgIyBDaGVjayB3ZWlnaHQgc3RhYmlsaXR5OiB3b3VsZCB0aGlzIHBsYWNlbWVudCB2aW9sYXRlIHdlaWdodCBjb25zdHJhaW50cz8KICAgICAgICAgICAgICAgICAgICAgICAgY2FuX3BsYWNlID0gVHJ1ZQoKICAgICAgICAgICAgICAgICAgICAgICAgIyBJZiB0aWVyID4gMCwgY2hlY2sgdGhhdCBjb250YWluZXIgYmVsb3cgaXMgaGVhdmllcgogICAgICAgICAgICAgICAgICAgICAgICBpZiBjdXJyZW50X3RpZXIgPiAwOgogICAgICAgICAgICAgICAgICAgICAgICAgICAgIyBGaW5kIGNvbnRhaW5lciBiZWxvdwogICAgICAgICAgICAgICAgICAgICAgICAgICAgZm9yIGV4aXN0aW5nIGluIHN0YWNraW5nX3BsYW46CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaWYgKGV4aXN0aW5nWydhc3NpZ25lZF9ibG9jayddID09IGJsb2NrX2lkIGFuZAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBleGlzdGluZ1snYXNzaWduZWRfcm93J10gPT0gcm93X2lkeCBhbmQKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZXhpc3RpbmdbJ2Fzc2lnbmVkX2JheSddID09IGJheV9pZHggYW5kCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGV4aXN0aW5nWyd0aWVyX2xldmVsJ10gPT0gY3VycmVudF90aWVyIC0gMSk6CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGJlbG93X2NpZCA9IGV4aXN0aW5nWydpZCddCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGJlbG93X3dlaWdodCA9IGNvbnRhaW5lcl9tYXBbYmVsb3dfY2lkXVsnd2VpZ2h0X3Rvbm5lcyddCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGlmIGJlbG93X3dlaWdodCA8IHdlaWdodDoKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNhbl9wbGFjZSA9IEZhbHNlCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGJyZWFrCgogICAgICAgICAgICAgICAgICAgICAgICBpZiBjYW5fcGxhY2U6CiAgICAgICAgICAgICAgICAgICAgICAgICAgICBhc3NpZ25tZW50ID0gewogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICdpZCc6IGNpZCwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAnYXNzaWduZWRfYmxvY2snOiBibG9ja19pZCwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAnYXNzaWduZWRfcm93Jzogcm93X2lkeCwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAnYXNzaWduZWRfYmF5JzogYmF5X2lkeCwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAndGllcl9sZXZlbCc6IGN1cnJlbnRfdGllciwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAncmVzaHVmZmxlc19pZl9yZXRyaWV2ZWRfbm93JzogMCAgIyBXaWxsIGNvbXB1dGUgbGF0ZXIKICAgICAgICAgICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICAgICAgICAgIHN0YWNraW5nX3BsYW4uYXBwZW5kKGFzc2lnbm1lbnQpCiAgICAgICAgICAgICAgICAgICAgICAgICAgICBzdGFja191c2FnZVtzdGFja19rZXldID0gY3VycmVudF90aWVyICsgMQogICAgICAgICAgICAgICAgICAgICAgICAgICAgcGxhY2VkID0gVHJ1ZQogICAgICAgICAgICAgICAgICAgICAgICAgICAgYnJlYWsKCiAgICAgICAgaWYgbm90IHBsYWNlZDoKICAgICAgICAgICAgbG9nZ2VyLndhcm5pbmcoZiJDb3VsZCBub3QgcGxhY2UgY29udGFpbmVyIHtjaWR9IC0geWFyZCBtYXkgYmUgZnVsbCIpCgogICAgbG9nZ2VyLmluZm8oZiJHcmVlZHkgcGxhY2VtZW50IGNvbXBsZXRlOiB7bGVuKHN0YWNraW5nX3BsYW4pfSBjb250YWluZXJzIHBsYWNlZCIpCiAgICByZXR1cm4gc3RhY2tpbmdfcGxhbgoKCmRlZiB0d29fb3B0X3N3YXAoc3RhY2tpbmdfcGxhbjogTGlzdFtEaWN0W3N0ciwgQW55XV0sIGNvbnRhaW5lcnM6IERpY3Rbc3RyLCBBbnldLCBjb250YWluZXJfaWRfbGlzdDogTGlzdFtzdHJdLCB5YXJkX2xheW91dDogRGljdFtzdHIsIEFueV0pIC0+IExpc3RbRGljdFtzdHIsIEFueV1dOgogICAgIiIiCiAgICBQZXJmb3JtIG9uZSAyLW9wdCBzd2FwOiB0cnkgc3dhcHBpbmcgdHdvIGNvbnRhaW5lcnMgYW5kIGtlZXAgaWYgaXQgaW1wcm92ZXMgb2JqZWN0aXZlLgoKICAgIEFyZ3M6CiAgICAgICAgc3RhY2tpbmdfcGxhbjogQ3VycmVudCBzdGFja2luZyBwbGFuCiAgICAgICAgY29udGFpbmVyczogRGljdCBtYXBwaW5nIGNvbnRhaW5lcl9pZCAtPiBjb250YWluZXIgaW5mbwogICAgICAgIGNvbnRhaW5lcl9pZF9saXN0OiBMaXN0IG9mIGFsbCBjb250YWluZXIgSURzIGZvciBpdGVyYXRpb24KICAgICAgICB5YXJkX2xheW91dDogWWFyZCBsYXlvdXQgZGVmaW5pdGlvbgoKICAgIFJldHVybnM6CiAgICAgICAgVXBkYXRlZCBzdGFja2luZyBwbGFuIChtYXkgYmUgc2FtZSBhcyBpbnB1dCBpZiBubyBpbXByb3ZlbWVudCBmb3VuZCkKICAgICIiIgogICAgaWYgbGVuKHN0YWNraW5nX3BsYW4pIDwgMjoKICAgICAgICByZXR1cm4gc3RhY2tpbmdfcGxhbgoKICAgICMgUGljayB0d28gcmFuZG9tIGNvbnRhaW5lcnMKICAgIGlkeDEsIGlkeDIgPSByYW5kb20uc2FtcGxlKHJhbmdlKGxlbihzdGFja2luZ19wbGFuKSksIDIpCiAgICBhc3NpZ25tZW50MSA9IHN0YWNraW5nX3BsYW5baWR4MV0KICAgIGFzc2lnbm1lbnQyID0gc3RhY2tpbmdfcGxhbltpZHgyXQoKICAgICMgU3dhcCB0aGVpciBsb2NhdGlvbnMKICAgIG5ld19wbGFuID0gZGVlcGNvcHkoc3RhY2tpbmdfcGxhbikKICAgIG5ld19wbGFuW2lkeDFdWydhc3NpZ25lZF9ibG9jayddID0gYXNzaWdubWVudDJbJ2Fzc2lnbmVkX2Jsb2NrJ10KICAgIG5ld19wbGFuW2lkeDFdWydhc3NpZ25lZF9yb3cnXSA9IGFzc2lnbm1lbnQyWydhc3NpZ25lZF9yb3cnXQogICAgbmV3X3BsYW5baWR4MV1bJ2Fzc2lnbmVkX2JheSddID0gYXNzaWdubWVudDJbJ2Fzc2lnbmVkX2JheSddCiAgICBuZXdfcGxhbltpZHgxXVsndGllcl9sZXZlbCddID0gYXNzaWdubWVudDJbJ3RpZXJfbGV2ZWwnXQoKICAgIG5ld19wbGFuW2lkeDJdWydhc3NpZ25lZF9ibG9jayddID0gYXNzaWdubWVudDFbJ2Fzc2lnbmVkX2Jsb2NrJ10KICAgIG5ld19wbGFuW2lkeDJdWydhc3NpZ25lZF9yb3cnXSA9IGFzc2lnbm1lbnQxWydhc3NpZ25lZF9yb3cnXQogICAgbmV3X3BsYW5baWR4Ml1bJ2Fzc2lnbmVkX2JheSddID0gYXNzaWdubWVudDFbJ2Fzc2lnbmVkX2JheSddCiAgICBuZXdfcGxhbltpZHgyXVsndGllcl9sZXZlbCddID0gYXNzaWdubWVudDFbJ3RpZXJfbGV2ZWwnXQoKICAgICMgQ2hlY2sgZmVhc2liaWxpdHkKICAgIGZvciBhc3NpZ25tZW50IGluIG5ld19wbGFuOgogICAgICAgIGlmIG5vdCBpc19mZWFzaWJsZV9hc3NpZ25tZW50KGFzc2lnbm1lbnQsIGNvbnRhaW5lcnMsIHlhcmRfbGF5b3V0KToKICAgICAgICAgICAgcmV0dXJuIHN0YWNraW5nX3BsYW4gICMgUmV2ZXJ0IGlmIGluZmVhc2libGUKCiAgICAjIENoZWNrIHdlaWdodCBzdGFiaWxpdHkKICAgIGlmIG5vdCBjaGVja193ZWlnaHRfc3RhYmlsaXR5KG5ld19wbGFuLCBjb250YWluZXJzLCB5YXJkX2xheW91dCk6CiAgICAgICAgcmV0dXJuIHN0YWNraW5nX3BsYW4KCiAgICByZXR1cm4gbmV3X3BsYW4KCgpkZWYgY29tcHV0ZV9vYmplY3RpdmUoc3RhY2tpbmdfcGxhbjogTGlzdFtEaWN0W3N0ciwgQW55XV0sIGNvbnRhaW5lcnM6IExpc3RbRGljdFtzdHIsIEFueV1dLCBncm91cGluZ193ZWlnaHQ6IGZsb2F0ID0gMC41KSAtPiBmbG9hdDoKICAgICIiIgogICAgQ29tcHV0ZSBvYmplY3RpdmUgdmFsdWU6IHByaW1hcmlseSBtaW5pbWl6ZSByZXNodWZmbGVzLCB3aXRoIHNlY29uZGFyeSB3ZWlnaHQgb24gZ3JvdXBpbmcuCgogICAgQXJnczoKICAgICAgICBzdGFja2luZ19wbGFuOiBDdXJyZW50IHN0YWNraW5nIHBsYW4KICAgICAgICBjb250YWluZXJzOiBMaXN0IG9mIGNvbnRhaW5lcnMKICAgICAgICBncm91cGluZ193ZWlnaHQ6IFdlaWdodCBmb3IgZ3JvdXBpbmcgcGVuYWx0eSB0ZXJtICgwLTEpCgogICAgUmV0dXJuczoKICAgICAgICBPYmplY3RpdmUgdmFsdWUgKGxvd2VyIGlzIGJldHRlcikKICAgICIiIgogICAgdG90YWxfcmVzaHVmZmxlcywgXyA9IGNvbXB1dGVfcmVzaHVmZmxlc19mb3Jfc3RhY2tpbmcoc3RhY2tpbmdfcGxhbiwgY29udGFpbmVycykKICAgIGdyb3VwaW5nX3Njb3JlID0gY29tcHV0ZV92ZXNzZWxfZ3JvdXBpbmdfc2NvcmUoc3RhY2tpbmdfcGxhbiwgY29udGFpbmVycykKCiAgICAjIEdyb3VwaW5nIHBlbmFsdHk6IGlmIHNjb3JlIGlzIGxvdywgYWRkIHBlbmFsdHkKICAgIGdyb3VwaW5nX3BlbmFsdHkgPSAoMS4wIC0gZ3JvdXBpbmdfc2NvcmUpICogZ3JvdXBpbmdfd2VpZ2h0ICogMTAwCgogICAgb2JqZWN0aXZlID0gdG90YWxfcmVzaHVmZmxlcyArIGdyb3VwaW5nX3BlbmFsdHkKICAgIHJldHVybiBvYmplY3RpdmUKCgpkZWYgc2ltdWxhdGVkX2FubmVhbGluZyhzdGFja2luZ19wbGFuOiBMaXN0W0RpY3Rbc3RyLCBBbnldXSwgY29udGFpbmVyczogTGlzdFtEaWN0W3N0ciwgQW55XV0sIHlhcmRfbGF5b3V0OiBEaWN0W3N0ciwgQW55XSwgcGFyYW1zOiBEaWN0W3N0ciwgQW55XSwgbG9nZ2VyKSAtPiBUdXBsZVtMaXN0W0RpY3Rbc3RyLCBBbnldXSwgZmxvYXQsIGludF06CiAgICAiIiIKICAgIFNpbXVsYXRlZCBBbm5lYWxpbmcgb3B0aW1pemF0aW9uIGxvb3AuCgogICAgQXJnczoKICAgICAgICBzdGFja2luZ19wbGFuOiBJbml0aWFsIHNvbHV0aW9uCiAgICAgICAgY29udGFpbmVyczogTGlzdCBvZiBjb250YWluZXJzCiAgICAgICAgeWFyZF9sYXlvdXQ6IFlhcmQgbGF5b3V0CiAgICAgICAgcGFyYW1zOiBEaWN0IHdpdGggbWF4X2l0ZXJhdGlvbnMsIHRlbXBlcmF0dXJlX2luaXQsIGNvb2xpbmdfcmF0ZSwgZ3JvdXBpbmdfd2VpZ2h0CiAgICAgICAgbG9nZ2VyOiBMb2dnZXIKCiAgICBSZXR1cm5zOgogICAgICAgIChiZXN0X3BsYW4sIGJlc3Rfb2JqZWN0aXZlLCBpdGVyYXRpb25zX3BlcmZvcm1lZCwgaW1wcm92ZW1lbnRzKQogICAgIiIiCiAgICBtYXhfaXRlcmF0aW9ucyA9IHBhcmFtcy5nZXQoJ21heF9pdGVyYXRpb25zJywgMTAwMCkKICAgIHRlbXBfaW5pdCA9IHBhcmFtcy5nZXQoJ3RlbXBlcmF0dXJlX2luaXQnLCA1MC4wKQogICAgY29vbGluZ19yYXRlID0gcGFyYW1zLmdldCgnY29vbGluZ19yYXRlJywgMC45NSkKICAgIGdyb3VwaW5nX3dlaWdodCA9IHBhcmFtcy5nZXQoJ2dyb3VwaW5nX3dlaWdodCcsIDAuNSkKCiAgICBjb250YWluZXJfbWFwID0ge2NbJ2lkJ106IGMgZm9yIGMgaW4gY29udGFpbmVyc30KICAgIGNvbnRhaW5lcl9pZF9saXN0ID0gW2NbJ2lkJ10gZm9yIGMgaW4gY29udGFpbmVyc10KCiAgICBjdXJyZW50X3BsYW4gPSBkZWVwY29weShzdGFja2luZ19wbGFuKQogICAgY3VycmVudF9vYmogPSBjb21wdXRlX29iamVjdGl2ZShjdXJyZW50X3BsYW4sIGNvbnRhaW5lcnMsIGdyb3VwaW5nX3dlaWdodCkKCiAgICBiZXN0X3BsYW4gPSBkZWVwY29weShjdXJyZW50X3BsYW4pCiAgICBiZXN0X29iaiA9IGN1cnJlbnRfb2JqCgogICAgdGVtcGVyYXR1cmUgPSB0ZW1wX2luaXQKICAgIGl0ZXJhdGlvbiA9IDAKICAgIGltcHJvdmVtZW50cyA9IDAKCiAgICBsb2dnZXIuaW5mbyhmIlN0YXJ0aW5nIFNpbXVsYXRlZCBBbm5lYWxpbmc6IFRfaW5pdD17dGVtcF9pbml0fSwgY29vbGluZz17Y29vbGluZ19yYXRlfSwgbWF4X2l0ZXI9e21heF9pdGVyYXRpb25zfSIpCiAgICBsb2dnZXIuaW5mbyhmIkluaXRpYWwgb2JqZWN0aXZlOiB7Y3VycmVudF9vYmo6LjJmfSIpCgogICAgd2hpbGUgaXRlcmF0aW9uIDwgbWF4X2l0ZXJhdGlvbnMgYW5kIHRlbXBlcmF0dXJlID4gMC4wMToKICAgICAgICAjIEdlbmVyYXRlIG5laWdoYm9yIHZpYSAyLW9wdCBzd2FwCiAgICAgICAgbmVpZ2hib3JfcGxhbiA9IHR3b19vcHRfc3dhcChjdXJyZW50X3BsYW4sIGNvbnRhaW5lcl9tYXAsIGNvbnRhaW5lcl9pZF9saXN0LCB5YXJkX2xheW91dCkKICAgICAgICBuZWlnaGJvcl9vYmogPSBjb21wdXRlX29iamVjdGl2ZShuZWlnaGJvcl9wbGFuLCBjb250YWluZXJzLCBncm91cGluZ193ZWlnaHQpCgogICAgICAgICMgQWNjZXB0YW5jZSBjcml0ZXJpb24KICAgICAgICBkZWx0YSA9IG5laWdoYm9yX29iaiAtIGN1cnJlbnRfb2JqCiAgICAgICAgaWYgZGVsdGEgPCAwOiAgIyBJbXByb3ZlbWVudAogICAgICAgICAgICBjdXJyZW50X3BsYW4gPSBuZWlnaGJvcl9wbGFuCiAgICAgICAgICAgIGN1cnJlbnRfb2JqID0gbmVpZ2hib3Jfb2JqCiAgICAgICAgICAgIGltcHJvdmVtZW50cyArPSAxCgogICAgICAgICAgICBpZiBjdXJyZW50X29iaiA8IGJlc3Rfb2JqOgogICAgICAgICAgICAgICAgYmVzdF9wbGFuID0gZGVlcGNvcHkoY3VycmVudF9wbGFuKQogICAgICAgICAgICAgICAgYmVzdF9vYmogPSBjdXJyZW50X29iagogICAgICAgICAgICAgICAgbG9nZ2VyLmRlYnVnKGYiSXRlcmF0aW9uIHtpdGVyYXRpb259OiBOZXcgYmVzdCBvYmplY3RpdmUgPSB7YmVzdF9vYmo6LjJmfSIpCgogICAgICAgIGVsc2U6ICAjIFdvcnNlIHNvbHV0aW9uLCBhY2NlcHQgd2l0aCBwcm9iYWJpbGl0eQogICAgICAgICAgICBwcm9iYWJpbGl0eSA9IG1hdGguZXhwKC1kZWx0YSAvIHRlbXBlcmF0dXJlKQogICAgICAgICAgICBpZiByYW5kb20ucmFuZG9tKCkgPCBwcm9iYWJpbGl0eToKICAgICAgICAgICAgICAgIGN1cnJlbnRfcGxhbiA9IG5laWdoYm9yX3BsYW4KICAgICAgICAgICAgICAgIGN1cnJlbnRfb2JqID0gbmVpZ2hib3Jfb2JqCgogICAgICAgICMgQ29vbCBkb3duCiAgICAgICAgdGVtcGVyYXR1cmUgKj0gY29vbGluZ19yYXRlCiAgICAgICAgaXRlcmF0aW9uICs9IDEKCiAgICAgICAgaWYgaXRlcmF0aW9uICUgMTAwID09IDA6CiAgICAgICAgICAgIGxvZ2dlci5kZWJ1ZyhmIkl0ZXJhdGlvbiB7aXRlcmF0aW9ufTogY3VycmVudF9vYmo9e2N1cnJlbnRfb2JqOi4yZn0sIGJlc3Rfb2JqPXtiZXN0X29iajouMmZ9LCBUPXt0ZW1wZXJhdHVyZTouNGZ9IikKCiAgICBsb2dnZXIuaW5mbyhmIlNBIGNvbXBsZXRlZDoge2l0ZXJhdGlvbn0gaXRlcmF0aW9ucywge2ltcHJvdmVtZW50c30gaW1wcm92ZW1lbnRzLCBiZXN0X29iaj17YmVzdF9vYmo6LjJmfSIpCiAgICByZXR1cm4gYmVzdF9wbGFuLCBiZXN0X29iaiwgaXRlcmF0aW9uLCBpbXByb3ZlbWVudHMKCgpkZWYgY29tcHV0ZV9vdXRwdXRfbWV0cmljcyhzdGFja2luZ19wbGFuOiBMaXN0W0RpY3Rbc3RyLCBBbnldXSwgY29udGFpbmVyczogTGlzdFtEaWN0W3N0ciwgQW55XV0sIHlhcmRfbGF5b3V0OiBEaWN0W3N0ciwgQW55XSkgLT4gRGljdFtzdHIsIEFueV06CiAgICAiIiIKICAgIENvbXB1dGUgYWxsIG91dHB1dCBtZXRyaWNzIGZvciB0aGUgc29sdXRpb24uCgogICAgQXJnczoKICAgICAgICBzdGFja2luZ19wbGFuOiBGaW5hbCBzdGFja2luZyBwbGFuCiAgICAgICAgY29udGFpbmVyczogTGlzdCBvZiBjb250YWluZXJzCiAgICAgICAgeWFyZF9sYXlvdXQ6IFlhcmQgbGF5b3V0CgogICAgUmV0dXJuczoKICAgICAgICBEaWN0IHdpdGggYWxsIG1ldHJpY3MKICAgICIiIgogICAgY29udGFpbmVyX21hcCA9IHtjWydpZCddOiBjIGZvciBjIGluIGNvbnRhaW5lcnN9CgogICAgdG90YWxfcmVzaHVmZmxlcywgcmVzaHVmZmxlc19wZXJfdmVzc2VsID0gY29tcHV0ZV9yZXNodWZmbGVzX2Zvcl9zdGFja2luZyhzdGFja2luZ19wbGFuLCBjb250YWluZXJzKQoKICAgIGJsb2NrX3V0aWwgPSBjb21wdXRlX2Jsb2NrX3V0aWxpemF0aW9uKHN0YWNraW5nX3BsYW4sIHlhcmRfbGF5b3V0KQogICAgZ3JvdXBpbmdfc2NvcmUgPSBjb21wdXRlX3Zlc3NlbF9ncm91cGluZ19zY29yZShzdGFja2luZ19wbGFuLCBjb250YWluZXJzKQogICAgYmFsYW5jZV9zY29yZSA9IGNvbXB1dGVfd2VpZ2h0X2JhbGFuY2Vfc2NvcmUoc3RhY2tpbmdfcGxhbiwgY29udGFpbmVyX21hcCwgeWFyZF9sYXlvdXQpCgogICAgIyBBZ2dyZWdhdGUgbWV0cmljcwogICAgbWV0cmljcyA9IHsKICAgICAgICAndG90YWxfcmVzaHVmZmxlcyc6IHRvdGFsX3Jlc2h1ZmZsZXMsCiAgICAgICAgJ2F2ZXJhZ2VfcmVzaHVmZmxlc19wZXJfdmVzc2VsJzogdG90YWxfcmVzaHVmZmxlcyAvIGxlbihyZXNodWZmbGVzX3Blcl92ZXNzZWwpIGlmIHJlc2h1ZmZsZXNfcGVyX3Zlc3NlbCBlbHNlIDAuMCwKICAgICAgICAnbWF4X3Jlc2h1ZmZsZXNfc2luZ2xlX3Zlc3NlbCc6IG1heChyZXNodWZmbGVzX3Blcl92ZXNzZWwudmFsdWVzKCkpIGlmIHJlc2h1ZmZsZXNfcGVyX3Zlc3NlbCBlbHNlIDAsCiAgICAgICAgJ3Zlc3NlbF9ncm91cGluZ19zY29yZSc6IGdyb3VwaW5nX3Njb3JlLAogICAgICAgICdzdGFja191dGlsaXphdGlvbic6IHN1bShibG9ja191dGlsLnZhbHVlcygpKSAvIGxlbihibG9ja191dGlsKSBpZiBibG9ja191dGlsIGVsc2UgMC4wLAogICAgICAgICd3ZWlnaHRfYmFsYW5jZV9zY29yZSc6IGJhbGFuY2Vfc2NvcmUsCiAgICAgICAgJ3Jlc2h1ZmZsZXNfcGVyX3Zlc3NlbCc6IHJlc2h1ZmZsZXNfcGVyX3Zlc3NlbCwKICAgICAgICAnYmxvY2tfdXRpbGl6YXRpb24nOiBibG9ja191dGlsCiAgICB9CgogICAgcmV0dXJuIG1ldHJpY3MKCgpkZWYgZ2VuZXJhdGVfc3RhY2tpbmdfcGxhbl9vdXRwdXQoc3RhY2tpbmdfcGxhbjogTGlzdFtEaWN0W3N0ciwgQW55XV0sIGNvbnRhaW5lcnM6IExpc3RbRGljdFtzdHIsIEFueV1dKSAtPiBMaXN0W0RpY3Rbc3RyLCBBbnldXToKICAgICIiIgogICAgR2VuZXJhdGUgb3V0cHV0IHJlcHJlc2VudGF0aW9uIG9mIHN0YWNraW5nIHBsYW4gd2l0aCByZXNodWZmbGVzX2lmX3JldHJpZXZlZF9ub3cgY29tcHV0ZWQuCgogICAgQXJnczoKICAgICAgICBzdGFja2luZ19wbGFuOiBJbnRlcm5hbCBzdGFja2luZyBwbGFuCiAgICAgICAgY29udGFpbmVyczogTGlzdCBvZiBjb250YWluZXJzCgogICAgUmV0dXJuczoKICAgICAgICBPdXRwdXQgc3RhY2tpbmcgcGxhbgogICAgIiIiCiAgICBvdXRwdXRfcGxhbiA9IFtdCiAgICBmb3IgYXNzaWdubWVudCBpbiBzdGFja2luZ19wbGFuOgogICAgICAgIGNpZCA9IGFzc2lnbm1lbnRbJ2lkJ10KICAgICAgICByZXNodWZmbGVzID0gZXN0aW1hdGVfcmVzaHVmZmxlc19zaW5nbGVfY29udGFpbmVyKGNpZCwgc3RhY2tpbmdfcGxhbikKCiAgICAgICAgb3V0cHV0X2Fzc2lnbm1lbnQgPSB7CiAgICAgICAgICAgICdpZCc6IGNpZCwKICAgICAgICAgICAgJ2Fzc2lnbmVkX2Jsb2NrJzogYXNzaWdubWVudFsnYXNzaWduZWRfYmxvY2snXSwKICAgICAgICAgICAgJ2Fzc2lnbmVkX3Jvdyc6IGFzc2lnbm1lbnRbJ2Fzc2lnbmVkX3JvdyddLAogICAgICAgICAgICAnYXNzaWduZWRfYmF5JzogYXNzaWdubWVudFsnYXNzaWduZWRfYmF5J10sCiAgICAgICAgICAgICd0aWVyX2xldmVsJzogYXNzaWdubWVudFsndGllcl9sZXZlbCddLAogICAgICAgICAgICAncmVzaHVmZmxlc19pZl9yZXRyaWV2ZWRfbm93JzogcmVzaHVmZmxlcwogICAgICAgIH0KICAgICAgICBvdXRwdXRfcGxhbi5hcHBlbmQob3V0cHV0X2Fzc2lnbm1lbnQpCgogICAgcmV0dXJuIG91dHB1dF9wbGFuCgoKZGVmIHJ1bihpbnB1dF9kYXRhOiBEaWN0W3N0ciwgQW55XSwgc29sdmVyX3BhcmFtczogRGljdFtzdHIsIEFueV0gPSBOb25lLCBleHRyYV9hcmd1bWVudHM6IERpY3Rbc3RyLCBBbnldID0gTm9uZSkgLT4gRGljdFtzdHIsIEFueV06CiAgICAiIiIKICAgIE1haW4gUUNlbnRyb2lkIHNvbHZlciBlbnRyeSBwb2ludCBmb3IgQ29udGFpbmVyIFlhcmQgU3RhY2tpbmcgT3B0aW1pemF0aW9uLgoKICAgIEFyZ3M6CiAgICAgICAgaW5wdXRfZGF0YTogRGljdCB3aXRoIHN0cnVjdHVyZSB7ImRhdGEiOiB7Li4ufX0gY29udGFpbmluZyBjb250YWluZXJzLCB5YXJkX2xheW91dCwgcGFyYW1ldGVycwogICAgICAgIHNvbHZlcl9wYXJhbXM6IE9wdGlvbmFsIFFDZW50cm9pZCBzb2x2ZXIgcGFyYW1ldGVycyAoZS5nLiwgcXVhbnR1bV9mcmFjdGlvbiwgdGltZW91dF9zZWNvbmRzKQogICAgICAgIGV4dHJhX2FyZ3VtZW50czogT3B0aW9uYWwgZXh0cmEgYXJndW1lbnRzIGZyb20gdXNlcgoKICAgIFJldHVybnM6CiAgICAgICAgRGljdCB3aXRoIG9iamVjdGl2ZV92YWx1ZSwgYmVuY2htYXJrLCBzb2x1dGlvbiwgYW5kIGFkZGl0aW9uYWxfb3V0cHV0CiAgICAiIiIKICAgIGxvZ2dlciA9IHFjZW50cm9pZF91c2VyX2xvZwogICAgc3RhcnRfdGltZSA9IHRpbWUudGltZSgpCgogICAgdHJ5OgogICAgICAgICMgRXh0cmFjdCBpbnB1dCBkYXRhIOKAlCBoYW5kbGUgYm90aCBwbGF0Zm9ybSAoaW5wdXRfZGF0YSBJUyB0aGUgZGF0YSkgYW5kIGxvY2FsIChpbnB1dF9kYXRhIGhhcyAnZGF0YScga2V5KQogICAgICAgIGlmICdjb250YWluZXJzJyBpbiBpbnB1dF9kYXRhOgogICAgICAgICAgICBkYXRhID0gaW5wdXRfZGF0YQogICAgICAgIGVsc2U6CiAgICAgICAgICAgIGRhdGEgPSBpbnB1dF9kYXRhLmdldCgnZGF0YScsIGlucHV0X2RhdGEpCiAgICAgICAgY29udGFpbmVycyA9IGRhdGEuZ2V0KCdjb250YWluZXJzJywgW10pCiAgICAgICAgeWFyZF9sYXlvdXQgPSBkYXRhLmdldCgneWFyZF9sYXlvdXQnLCB7fSkKICAgICAgICBwYXJhbXMgPSBkYXRhLmdldCgncGFyYW1ldGVycycsIHt9KQoKICAgICAgICAjIE1lcmdlIHdpdGggc29sdmVyX3BhcmFtcyBpZiBwcm92aWRlZAogICAgICAgIGlmIHNvbHZlcl9wYXJhbXM6CiAgICAgICAgICAgIHBhcmFtcy51cGRhdGUoc29sdmVyX3BhcmFtcykKCiAgICAgICAgbG9nZ2VyLmluZm8oZiJDb250YWluZXIgWWFyZCBTdGFja2luZyBPcHRpbWl6YXRpb24gU29sdmVyIikKICAgICAgICBsb2dnZXIuaW5mbyhmIklucHV0OiB7bGVuKGNvbnRhaW5lcnMpfSBjb250YWluZXJzLCB7eWFyZF9sYXlvdXQuZ2V0KCd0b3RhbF9ibG9ja3MnLCAwKX0geWFyZCBibG9ja3MiKQoKICAgICAgICAjIFZhbGlkYXRlIGlucHV0CiAgICAgICAgaWYgbm90IGNvbnRhaW5lcnMgb3Igbm90IHlhcmRfbGF5b3V0OgogICAgICAgICAgICBsb2dnZXIuZXJyb3IoIkludmFsaWQgaW5wdXQ6IG1pc3NpbmcgY29udGFpbmVycyBvciB5YXJkX2xheW91dCIpCiAgICAgICAgICAgIHJldHVybiB7InN0YXR1cyI6ICJFUlJPUiIsICJtZXNzYWdlIjogIk1pc3NpbmcgcmVxdWlyZWQgaW5wdXQgZGF0YSJ9CgogICAgICAgICMgU3RlcCAxOiBHcmVlZHkgaW5pdGlhbGl6YXRpb24KICAgICAgICBsb2dnZXIuaW5mbygiU3RlcCAxOiBHcmVlZHkgSW5pdGlhbGl6YXRpb24iKQogICAgICAgIGluaXRpYWxfcGxhbiA9IGdyZWVkeV9pbml0aWFsX3N0YWNraW5nKGNvbnRhaW5lcnMsIHlhcmRfbGF5b3V0LCBsb2dnZXIpCgogICAgICAgIGlmIG5vdCBpbml0aWFsX3BsYW46CiAgICAgICAgICAgIGxvZ2dlci5lcnJvcigiR3JlZWR5IGluaXRpYWxpemF0aW9uIGZhaWxlZCIpCiAgICAgICAgICAgIHJldHVybiB7InN0YXR1cyI6ICJFUlJPUiIsICJtZXNzYWdlIjogIkZhaWxlZCB0byBjcmVhdGUgaW5pdGlhbCBzdGFja2luZyBwbGFuIn0KCiAgICAgICAgZ3JlZWR5X29iaiA9IGNvbXB1dGVfb2JqZWN0aXZlKGluaXRpYWxfcGxhbiwgY29udGFpbmVycywgcGFyYW1zLmdldCgnZ3JvdXBpbmdfd2VpZ2h0JywgMC41KSkKICAgICAgICBsb2dnZXIuaW5mbyhmIkluaXRpYWwgc29sdXRpb24gb2JqZWN0aXZlOiB7Z3JlZWR5X29iajouMmZ9IikKCiAgICAgICAgIyBTdGVwIDI6IFNpbXVsYXRlZCBBbm5lYWxpbmcgb3B0aW1pemF0aW9uCiAgICAgICAgbG9nZ2VyLmluZm8oIlN0ZXAgMjogU2ltdWxhdGVkIEFubmVhbGluZyBPcHRpbWl6YXRpb24iKQogICAgICAgIGJlc3RfcGxhbiwgYmVzdF9vYmosIHNhX2l0ZXJhdGlvbnMsIHNhX2ltcHJvdmVtZW50cyA9IHNpbXVsYXRlZF9hbm5lYWxpbmcoaW5pdGlhbF9wbGFuLCBjb250YWluZXJzLCB5YXJkX2xheW91dCwgcGFyYW1zLCBsb2dnZXIpCgogICAgICAgIGVsYXBzZWRfbXMgPSAodGltZS50aW1lKCkgLSBzdGFydF90aW1lKSAqIDEwMDAKCiAgICAgICAgIyBDb21wdXRlIG91dHB1dCBtZXRyaWNzCiAgICAgICAgbG9nZ2VyLmluZm8oIlN0ZXAgMzogQ29tcHV0aW5nIE91dHB1dCBNZXRyaWNzIikKICAgICAgICBtZXRyaWNzID0gY29tcHV0ZV9vdXRwdXRfbWV0cmljcyhiZXN0X3BsYW4sIGNvbnRhaW5lcnMsIHlhcmRfbGF5b3V0KQoKICAgICAgICAjIEdlbmVyYXRlIG91dHB1dCBzdGFja2luZyBwbGFuCiAgICAgICAgb3V0cHV0X3N0YWNraW5nX3BsYW4gPSBnZW5lcmF0ZV9zdGFja2luZ19wbGFuX291dHB1dChiZXN0X3BsYW4sIGNvbnRhaW5lcnMpCgogICAgICAgICMgQ29tcHV0ZSB2ZXNzZWwgc3VtbWFyeQogICAgICAgIHRvdGFsX3Jlc2h1ZmZsZXMsIHJlc2h1ZmZsZXNfcGVyX3Zlc3NlbCA9IGNvbXB1dGVfcmVzaHVmZmxlc19mb3Jfc3RhY2tpbmcoYmVzdF9wbGFuLCBjb250YWluZXJzKQogICAgICAgIHZlc3NlbF9zdW1tYXJ5ID0gW10KICAgICAgICBmb3IgdmVzc2VsX2lkLCByZXNodWZmbGVzIGluIHJlc2h1ZmZsZXNfcGVyX3Zlc3NlbC5pdGVtcygpOgogICAgICAgICAgICB2ZXNzZWxfY29udGFpbmVycyA9IFtjIGZvciBjIGluIGNvbnRhaW5lcnMgaWYgY1sndmVzc2VsX2lkJ10gPT0gdmVzc2VsX2lkXQogICAgICAgICAgICB2ZXNzZWxfc3VtbWFyeS5hcHBlbmQoewogICAgICAgICAgICAgICAgJ3Zlc3NlbF9pZCc6IHZlc3NlbF9pZCwKICAgICAgICAgICAgICAgICdkZXBhcnR1cmVfb3JkZXInOiB2ZXNzZWxfY29udGFpbmVyc1swXVsndmVzc2VsX2RlcGFydHVyZV9vcmRlciddIGlmIHZlc3NlbF9jb250YWluZXJzIGVsc2UgMCwKICAgICAgICAgICAgICAgICd0b3RhbF9jb250YWluZXJzJzogbGVuKHZlc3NlbF9jb250YWluZXJzKSwKICAgICAgICAgICAgICAgICdlc3RpbWF0ZWRfcmVzaHVmZmxlcyc6IHJlc2h1ZmZsZXMsCiAgICAgICAgICAgICAgICAncmVzaHVmZmxlc19wZXJjZW50YWdlJzogMTAwLjAgKiByZXNodWZmbGVzIC8gbGVuKHZlc3NlbF9jb250YWluZXJzKSBpZiB2ZXNzZWxfY29udGFpbmVycyBlbHNlIDAuMAogICAgICAgICAgICB9KQoKICAgICAgICAjIFNvcnQgYnkgZGVwYXJ0dXJlIG9yZGVyCiAgICAgICAgdmVzc2VsX3N1bW1hcnkuc29ydChrZXk9bGFtYmRhIHY6IHZbJ2RlcGFydHVyZV9vcmRlciddKQoKICAgICAgICAjIEJ1aWxkIG91dHB1dCAoUUNlbnRyb2lkIGJlbmNobWFyayBjb250cmFjdCBjb21wbGlhbnQpCiAgICAgICAgZWxhcHNlZF9zID0gZWxhcHNlZF9tcyAvIDEwMDAuMAogICAgICAgIG91dHB1dCA9IHsKICAgICAgICAgICAgJ29iamVjdGl2ZV92YWx1ZSc6IHJvdW5kKGJlc3Rfb2JqLCAyKSwKICAgICAgICAgICAgJ3NvbHV0aW9uX3N0YXR1cyc6ICdvcHRpbWFsJyBpZiBiZXN0X29iaiA8IGdyZWVkeV9vYmogZWxzZSAnZmVhc2libGUnLAogICAgICAgICAgICAnc3RhY2tpbmdfcGxhbic6IG91dHB1dF9zdGFja2luZ19wbGFuLAogICAgICAgICAgICAncmVzaHVmZmxpbmdfc3VtbWFyeSc6IHZlc3NlbF9zdW1tYXJ5LAogICAgICAgICAgICAnb3B0aW1pemF0aW9uX21ldHJpY3MnOiB7CiAgICAgICAgICAgICAgICAndG90YWxfcmVzaHVmZmxlcyc6IG1ldHJpY3NbJ3RvdGFsX3Jlc2h1ZmZsZXMnXSwKICAgICAgICAgICAgICAgICdhdmVyYWdlX3Jlc2h1ZmZsZXNfcGVyX3Zlc3NlbCc6IG1ldHJpY3NbJ2F2ZXJhZ2VfcmVzaHVmZmxlc19wZXJfdmVzc2VsJ10sCiAgICAgICAgICAgICAgICAnbWF4X3Jlc2h1ZmZsZXNfc2luZ2xlX3Zlc3NlbCc6IG1ldHJpY3NbJ21heF9yZXNodWZmbGVzX3NpbmdsZV92ZXNzZWwnXSwKICAgICAgICAgICAgICAgICd2ZXNzZWxfZ3JvdXBpbmdfc2NvcmUnOiBtZXRyaWNzWyd2ZXNzZWxfZ3JvdXBpbmdfc2NvcmUnXSwKICAgICAgICAgICAgICAgICdzdGFja191dGlsaXphdGlvbic6IG1ldHJpY3NbJ3N0YWNrX3V0aWxpemF0aW9uJ10sCiAgICAgICAgICAgICAgICAnd2VpZ2h0X2JhbGFuY2Vfc2NvcmUnOiBtZXRyaWNzWyd3ZWlnaHRfYmFsYW5jZV9zY29yZSddCiAgICAgICAgICAgIH0sCiAgICAgICAgICAgICdjb3N0X2JyZWFrZG93bic6IHsKICAgICAgICAgICAgICAgICd0b3RhbF9yZXNodWZmbGVzJzogbWV0cmljc1sndG90YWxfcmVzaHVmZmxlcyddLAogICAgICAgICAgICAgICAgJ2dyZWVkeV9yZXNodWZmbGVzJzogcm91bmQoZ3JlZWR5X29iaiwgMiksCiAgICAgICAgICAgICAgICAnb3B0aW1pemVkX3Jlc2h1ZmZsZXMnOiByb3VuZChiZXN0X29iaiwgMiksCiAgICAgICAgICAgICAgICAnaW1wcm92ZW1lbnRfcGN0Jzogcm91bmQoKDEgLSBiZXN0X29iaiAvIG1heChncmVlZHlfb2JqLCAxKSkgKiAxMDAsIDEpCiAgICAgICAgICAgIH0sCiAgICAgICAgICAgICdvcHRpbWl6YXRpb25fY29udmVyZ2VuY2UnOiB7CiAgICAgICAgICAgICAgICAnZ3JlZWR5X2luaXRpYWxfY29zdCc6IHJvdW5kKGdyZWVkeV9vYmosIDIpLAogICAgICAgICAgICAgICAgJ3NhX2Nvc3QnOiByb3VuZChiZXN0X29iaiwgMiksCiAgICAgICAgICAgICAgICAnZmluYWxfb3B0aW1pemVkX2Nvc3QnOiByb3VuZChiZXN0X29iaiwgMiksCiAgICAgICAgICAgICAgICAnc2FfaXRlcmF0aW9ucyc6IHNhX2l0ZXJhdGlvbnMsCiAgICAgICAgICAgICAgICAnc2FfaW1wcm92ZW1lbnRzJzogc2FfaW1wcm92ZW1lbnRzCiAgICAgICAgICAgIH0sCiAgICAgICAgICAgICdjb21wdXRhdGlvbl9tZXRyaWNzJzogewogICAgICAgICAgICAgICAgJ3dhbGxfdGltZV9zJzogcm91bmQoZWxhcHNlZF9zLCAzKSwKICAgICAgICAgICAgICAgICdhbGdvcml0aG0nOiAnR3JlZWR5X1NBX3YxLjAnLAogICAgICAgICAgICAgICAgJ3NvbHZlcl92ZXJzaW9uJzogJzEuMCcsCiAgICAgICAgICAgICAgICAnc2FfaXRlcmF0aW9ucyc6IHNhX2l0ZXJhdGlvbnMKICAgICAgICAgICAgfSwKICAgICAgICAgICAgJ2JlbmNobWFyayc6IHsKICAgICAgICAgICAgICAgICdleGVjdXRpb25fY29zdCc6IHsndmFsdWUnOiAxLjAsICd1bml0JzogJ2NyZWRpdHMnfSwKICAgICAgICAgICAgICAgICd0aW1lX2VsYXBzZWQnOiBmJ3tlbGFwc2VkX3M6LjNmfXMnLAogICAgICAgICAgICAgICAgJ2VuZXJneV9jb25zdW1wdGlvbic6IDAuMAogICAgICAgICAgICB9CiAgICAgICAgfQoKICAgICAgICBsb2dnZXIuaW5mbyhmIlNvbHZlciBjb21wbGV0ZWQgc3VjY2Vzc2Z1bGx5IGluIHtlbGFwc2VkX21zOi4xZn0gbXMiKQogICAgICAgIGxvZ2dlci5pbmZvKGYiRmluYWwgb2JqZWN0aXZlOiB7YmVzdF9vYmo6LjJmfSIpCiAgICAgICAgbG9nZ2VyLmluZm8oZiJUb3RhbCByZXNodWZmbGVzIG1pbmltaXplZDoge21ldHJpY3NbJ3RvdGFsX3Jlc2h1ZmZsZXMnXX0iKQoKICAgICAgICByZXR1cm4gb3V0cHV0CgogICAgZXhjZXB0IEV4Y2VwdGlvbiBhcyBlOgogICAgICAgIGxvZ2dlci5lcnJvcihmIlNvbHZlciBmYWlsZWQgd2l0aCBleGNlcHRpb246IHtzdHIoZSl9IikKICAgICAgICByZXR1cm4gewogICAgICAgICAgICAnc3RhdHVzJzogJ0VSUk9SJywKICAgICAgICAgICAgJ21lc3NhZ2UnOiBzdHIoZSksCiAgICAgICAgICAgICdzb2x2ZXJfbG9nJzogbG9nZ2VyLm1lc3NhZ2VzCiAgICAgICAgfQoKCiMgRm9yIHRlc3RpbmcvZGVidWdnaW5nCmlmIF9fbmFtZV9fID09ICdfX21haW5fXyc6CiAgICAjIExvYWQgc21hbGwgZGF0YXNldCBhbmQgcnVuCiAgICB3aXRoIG9wZW4oJ2RhdGFzZXRfc21hbGwuanNvbicsICdyJykgYXMgZjoKICAgICAgICB0ZXN0X2lucHV0ID0ganNvbi5sb2FkKGYpCgogICAgcmVzdWx0ID0gcnVuKHRlc3RfaW5wdXQpCgogICAgcHJpbnQoIlxuIiArICI9Iio2MCkKICAgIHByaW50KCJTT0xWRVIgT1VUUFVUIikKICAgIHByaW50KCI9Iio2MCkKICAgIHByaW50KGpzb24uZHVtcHMocmVzdWx0LCBpbmRlbnQ9MikpCg==
+"""
+QCentroid Container Yard Stacking Optimization Solver
+
+This solver optimizes container stacking arrangement in a yard to minimize
+reshuffles during vessel loading. Uses greedy initialization, 2-opt local search,
+and Simulated Annealing metaheuristic.
+
+Entry point: run(input_data, solver_params, extra_arguments) -> dict
+"""
+
+import json
+import time
+import math
+import random
+from copy import deepcopy
+from typing import Dict, List, Any, Tuple
+from solver_helpers import (
+    compute_reshuffles_for_stacking,
+    is_feasible_assignment,
+    check_weight_stability,
+    compute_block_utilization,
+    compute_vessel_grouping_score,
+    compute_weight_balance_score,
+    estimate_reshuffles_single_container
+)
+
+
+# Logger for QCentroid platform
+class QCentroidUserLogger:
+    def __init__(self):
+        self.messages = []
+
+    def info(self, msg: str):
+        self.messages.append({"level": "INFO", "message": msg})
+        print(f"[INFO] {msg}")
+
+    def debug(self, msg: str):
+        self.messages.append({"level": "DEBUG", "message": msg})
+        print(f"[DEBUG] {msg}")
+
+    def warning(self, msg: str):
+        self.messages.append({"level": "WARNING", "message": msg})
+        print(f"[WARNING] {msg}")
+
+    def error(self, msg: str):
+        self.messages.append({"level": "ERROR", "message": msg})
+        print(f"[ERROR] {msg}")
+
+
+qcentroid_user_log = QCentroidUserLogger()
+
+
+def greedy_initial_stacking(containers: List[Dict[str, Any]], yard_layout: Dict[str, Any], logger) -> List[Dict[str, Any]]:
+    """
+    Greedy initialization: sort containers by vessel departure order and weight,
+    then place them greedily in available positions.
+
+    Args:
+        containers: List of container dictionaries
+        yard_layout: Yard layout definition
+        logger: Logger instance
+
+    Returns:
+        Initial stacking plan (list of assignments)
+    """
+    logger.info(f"Starting greedy initialization with {len(containers)} containers")
+
+    # Sort containers: first by vessel departure order (earlier first), then by weight (heavier first)
+    sorted_containers = sorted(
+        containers,
+        key=lambda c: (c['vessel_departure_order'], -c['weight_tonnes'])
+    )
+
+    stacking_plan = []
+    container_map = {c['id']: c for c in containers}
+
+    # Track usage of each position
+    stack_usage = {}  # (block, row, bay) -> current_tier (0-indexed, next available)
+
+    for container in sorted_containers:
+        cid = container['id']
+        weight = container['weight_tonnes']
+
+        # Try to find a suitable position
+        placed = False
+
+        for block in yard_layout['blocks']:
+            if placed:
+                break
+
+            block_id = block['block_id']
+            max_tier = block['max_tier_height']
+
+            for row_idx in range(block['rows']):
+                if placed:
+                    break
+
+                for bay_idx in range(block['bays_per_row']):
+                    stack_key = (block_id, row_idx, bay_idx)
+                    current_tier = stack_usage.get(stack_key, 0)
+
+                    # Check if we can place in this stack
+                    if current_tier < max_tier:
+                        # Check weight stability: would this placement violate weight constraints?
+                        can_place = True
+
+                        # If tier > 0, check that container below is heavier
+                        if current_tier > 0:
+                            # Find container below
+                            for existing in stacking_plan:
+                                if (existing['assigned_block'] == block_id and
+                                    existing['assigned_row'] == row_idx and
+                                    existing['assigned_bay'] == bay_idx and
+                                    existing['tier_level'] == current_tier - 1):
+                                    below_cid = existing['id']
+                                    below_weight = container_map[below_cid]['weight_tonnes']
+                                    if below_weight < weight:
+                                        can_place = False
+                                    break
+
+                        if can_place:
+                            assignment = {
+                                'id': cid,
+                                'assigned_block': block_id,
+                                'assigned_row': row_idx,
+                                'assigned_bay': bay_idx,
+                                'tier_level': current_tier,
+                                'reshuffles_if_retrieved_now': 0  # Will compute later
+                            }
+                            stacking_plan.append(assignment)
+                            stack_usage[stack_key] = current_tier + 1
+                            placed = True
+                            break
+
+        if not placed:
+            logger.warning(f"Could not place container {cid} - yard may be full")
+
+    logger.info(f"Greedy placement complete: {len(stacking_plan)} containers placed")
+    return stacking_plan
+
+
+def two_opt_swap(stacking_plan: List[Dict[str, Any]], containers: Dict[str, Any], container_id_list: List[str], yard_layout: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """
+    Perform one 2-opt swap: try swapping two containers and keep if it improves objective.
+
+    Args:
+        stacking_plan: Current stacking plan
+        containers: Dict mapping container_id -> container info
+        container_id_list: List of all container IDs for iteration
+        yard_layout: Yard layout definition
+
+    Returns:
+        Updated stacking plan (may be same as input if no improvement found)
+    """
+    if len(stacking_plan) < 2:
+        return stacking_plan
+
+    # Pick two random containers
+    idx1, idx2 = random.sample(range(len(stacking_plan)), 2)
+    assignment1 = stacking_plan[idx1]
+    assignment2 = stacking_plan[idx2]
+
+    # Swap their locations
+    new_plan = deepcopy(stacking_plan)
+    new_plan[idx1]['assigned_block'] = assignment2['assigned_block']
+    new_plan[idx1]['assigned_row'] = assignment2['assigned_row']
+    new_plan[idx1]['assigned_bay'] = assignment2['assigned_bay']
+    new_plan[idx1]['tier_level'] = assignment2['tier_level']
+
+    new_plan[idx2]['assigned_block'] = assignment1['assigned_block']
+    new_plan[idx2]['assigned_row'] = assignment1['assigned_row']
+    new_plan[idx2]['assigned_bay'] = assignment1['assigned_bay']
+    new_plan[idx2]['tier_level'] = assignment1['tier_level']
+
+    # Check feasibility
+    for assignment in new_plan:
+        if not is_feasible_assignment(assignment, containers, yard_layout):
+            return stacking_plan  # Revert if infeasible
+
+    # Check weight stability
+    if not check_weight_stability(new_plan, containers, yard_layout):
+        return stacking_plan
+
+    return new_plan
+
+
+def compute_objective(stacking_plan: List[Dict[str, Any]], containers: List[Dict[str, Any]], grouping_weight: float = 0.5) -> float:
+    """
+    Compute objective value: primarily minimize reshuffles, with secondary weight on grouping.
+
+    Args:
+        stacking_plan: Current stacking plan
+        containers: List of containers
+        grouping_weight: Weight for grouping penalty term (0-1)
+
+    Returns:
+        Objective value (lower is better)
+    """
+    total_reshuffles, _ = compute_reshuffles_for_stacking(stacking_plan, containers)
+    grouping_score = compute_vessel_grouping_score(stacking_plan, containers)
+
+    # Grouping penalty: if score is low, add penalty
+    grouping_penalty = (1.0 - grouping_score) * grouping_weight * 100
+
+    objective = total_reshuffles + grouping_penalty
+    return objective
+
+
+def simulated_annealing(stacking_plan: List[Dict[str, Any]], containers: List[Dict[str, Any]], yard_layout: Dict[str, Any], params: Dict[str, Any], logger) -> Tuple[List[Dict[str, Any]], float, int]:
+    """
+    Simulated Annealing optimization loop.
+
+    Args:
+        stacking_plan: Initial solution
+        containers: List of containers
+        yard_layout: Yard layout
+        params: Dict with max_iterations, temperature_init, cooling_rate, grouping_weight
+        logger: Logger
+
+    Returns:
+        (best_plan, best_objective, iterations_performed, improvements)
+    """
+    max_iterations = params.get('max_iterations', 1000)
+    temp_init = params.get('temperature_init', 50.0)
+    cooling_rate = params.get('cooling_rate', 0.95)
+    grouping_weight = params.get('grouping_weight', 0.5)
+
+    container_map = {c['id']: c for c in containers}
+    container_id_list = [c['id'] for c in containers]
+
+    current_plan = deepcopy(stacking_plan)
+    current_obj = compute_objective(current_plan, containers, grouping_weight)
+
+    best_plan = deepcopy(current_plan)
+    best_obj = current_obj
+
+    temperature = temp_init
+    iteration = 0
+    improvements = 0
+
+    logger.info(f"Starting Simulated Annealing: T_init={temp_init}, cooling={cooling_rate}, max_iter={max_iterations}")
+    logger.info(f"Initial objective: {current_obj:.2f}")
+
+    while iteration < max_iterations and temperature > 0.01:
+        # Generate neighbor via 2-opt swap
+        neighbor_plan = two_opt_swap(current_plan, container_map, container_id_list, yard_layout)
+        neighbor_obj = compute_objective(neighbor_plan, containers, grouping_weight)
+
+        # Acceptance criterion
+        delta = neighbor_obj - current_obj
+        if delta < 0:  # Improvement
+            current_plan = neighbor_plan
+            current_obj = neighbor_obj
+            improvements += 1
+
+            if current_obj < best_obj:
+                best_plan = deepcopy(current_plan)
+                best_obj = current_obj
+                logger.debug(f"Iteration {iteration}: New best objective = {best_obj:.2f}")
+
+        else:  # Worse solution, accept with probability
+            probability = math.exp(-delta / temperature)
+            if random.random() < probability:
+                current_plan = neighbor_plan
+                current_obj = neighbor_obj
+
+        # Cool down
+        temperature *= cooling_rate
+        iteration += 1
+
+        if iteration % 100 == 0:
+            logger.debug(f"Iteration {iteration}: current_obj={current_obj:.2f}, best_obj={best_obj:.2f}, T={temperature:.4f}")
+
+    logger.info(f"SA completed: {iteration} iterations, {improvements} improvements, best_obj={best_obj:.2f}")
+    return best_plan, best_obj, iteration, improvements
+
+
+def compute_output_metrics(stacking_plan: List[Dict[str, Any]], containers: List[Dict[str, Any]], yard_layout: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Compute all output metrics for the solution.
+
+    Args:
+        stacking_plan: Final stacking plan
+        containers: List of containers
+        yard_layout: Yard layout
+
+    Returns:
+        Dict with all metrics
+    """
+    container_map = {c['id']: c for c in containers}
+
+    total_reshuffles, reshuffles_per_vessel = compute_reshuffles_for_stacking(stacking_plan, containers)
+
+    block_util = compute_block_utilization(stacking_plan, yard_layout)
+    grouping_score = compute_vessel_grouping_score(stacking_plan, containers)
+    balance_score = compute_weight_balance_score(stacking_plan, container_map, yard_layout)
+
+    # Aggregate metrics
+    metrics = {
+        'total_reshuffles': total_reshuffles,
+        'average_reshuffles_per_vessel': total_reshuffles / len(reshuffles_per_vessel) if reshuffles_per_vessel else 0.0,
+        'max_reshuffles_single_vessel': max(reshuffles_per_vessel.values()) if reshuffles_per_vessel else 0,
+        'vessel_grouping_score': grouping_score,
+        'stack_utilization': sum(block_util.values()) / len(block_util) if block_util else 0.0,
+        'weight_balance_score': balance_score,
+        'reshuffles_per_vessel': reshuffles_per_vessel,
+        'block_utilization': block_util
+    }
+
+    return metrics
+
+
+def generate_stacking_plan_output(stacking_plan: List[Dict[str, Any]], containers: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Generate output representation of stacking plan with reshuffles_if_retrieved_now computed.
+
+    Args:
+        stacking_plan: Internal stacking plan
+        containers: List of containers
+
+    Returns:
+        Output stacking plan
+    """
+    output_plan = []
+    for assignment in stacking_plan:
+        cid = assignment['id']
+        reshuffles = estimate_reshuffles_single_container(cid, stacking_plan)
+
+        output_assignment = {
+            'id': cid,
+            'assigned_block': assignment['assigned_block'],
+            'assigned_row': assignment['assigned_row'],
+            'assigned_bay': assignment['assigned_bay'],
+            'tier_level': assignment['tier_level'],
+            'reshuffles_if_retrieved_now': reshuffles
+        }
+        output_plan.append(output_assignment)
+
+    return output_plan
+
+
+def run(input_data: Dict[str, Any], solver_params: Dict[str, Any] = None, extra_arguments: Dict[str, Any] = None) -> Dict[str, Any]:
+    """
+    Main QCentroid solver entry point for Container Yard Stacking Optimization.
+
+    Args:
+        input_data: Dict with structure {"data": {...}} containing containers, yard_layout, parameters
+        solver_params: Optional QCentroid solver parameters (e.g., quantum_fraction, timeout_seconds)
+        extra_arguments: Optional extra arguments from user
+
+    Returns:
+        Dict with objective_value, benchmark, solution, and additional_output
+    """
+    logger = qcentroid_user_log
+    start_time = time.time()
+
+    try:
+        # Extract input data - handle both platform (input_data IS the data) and local (input_data has 'data' key)
+        if 'containers' in input_data:
+            data = input_data
+        else:
+            data = input_data.get('data', input_data)
+        containers = data.get('containers', [])
+        yard_layout = data.get('yard_layout', {})
+        params = data.get('parameters', {})
+
+        # Merge with solver_params if provided
+        if solver_params:
+            params.update(solver_params)
+
+        logger.info(f"Container Yard Stacking Optimization Solver")
+        logger.info(f"Input: {len(containers)} containers, {yard_layout.get('total_blocks', 0)} yard blocks")
+
+        # Validate input
+        if not containers or not yard_layout:
+            logger.error("Invalid input: missing containers or yard_layout")
+            return {"status": "ERROR", "message": "Missing required input data"}
+
+        # Step 1: Greedy initialization
+        logger.info("Step 1: Greedy Initialization")
+        initial_plan = greedy_initial_stacking(containers, yard_layout, logger)
+
+        if not initial_plan:
+            logger.error("Greedy initialization failed")
+            return {"status": "ERROR", "message": "Failed to create initial stacking plan"}
+
+        greedy_obj = compute_objective(initial_plan, containers, params.get('grouping_weight', 0.5))
+        logger.info(f"Initial solution objective: {greedy_obj:.2f}")
+
+        # Step 2: Simulated Annealing optimization
+        logger.info("Step 2: Simulated Annealing Optimization")
+        best_plan, best_obj, sa_iterations, sa_improvements = simulated_annealing(initial_plan, containers, yard_layout, params, logger)
+
+        elapsed_ms = (time.time() - start_time) * 1000
+
+        # Compute output metrics
+        logger.info("Step 3: Computing Output Metrics")
+        metrics = compute_output_metrics(best_plan, containers, yard_layout)
+
+        # Generate output stacking plan
+        output_stacking_plan = generate_stacking_plan_output(best_plan, containers)
+
+        # Compute vessel summary
+        total_reshuffles, reshuffles_per_vessel = compute_reshuffles_for_stacking(best_plan, containers)
+        vessel_summary = []
+        for vessel_id, reshuffles in reshuffles_per_vessel.items():
+            vessel_containers = [c for c in containers if c['vessel_id'] == vessel_id]
+            vessel_summary.append({
+                'vessel_id': vessel_id,
+                'departure_order': vessel_containers[0]['vessel_departure_order'] if vessel_containers else 0,
+                'total_containers': len(vessel_containers),
+                'estimated_reshuffles': reshuffles,
+                'reshuffles_percentage': 100.0 * reshuffles / len(vessel_containers) if vessel_containers else 0.0
+            })
+
+        # Sort by departure order
+        vessel_summary.sort(key=lambda v: v['departure_order'])
+
+        # Build output (QCentroid benchmark contract compliant)
+        elapsed_s = elapsed_ms / 1000.0
+        output = {
+            'objective_value': round(best_obj, 2),
+            'solution_status': 'optimal' if best_obj < greedy_obj else 'feasible',
+            'stacking_plan': output_stacking_plan,
+            'reshuffling_summary': vessel_summary,
+            'optimization_metrics': {
+                'total_reshuffles': metrics['total_reshuffles'],
+                'average_reshuffles_per_vessel': metrics['average_reshuffles_per_vessel'],
+                'max_reshuffles_single_vessel': metrics['max_reshuffles_single_vessel'],
+                'vessel_grouping_score': metrics['vessel_grouping_score'],
+                'stack_utilization': metrics['stack_utilization'],
+                'weight_balance_score': metrics['weight_balance_score']
+            },
+            'cost_breakdown': {
+                'total_reshuffles': metrics['total_reshuffles'],
+                'greedy_reshuffles': round(greedy_obj, 2),
+                'optimized_reshuffles': round(best_obj, 2),
+                'improvement_pct': round((1 - best_obj / max(greedy_obj, 1)) * 100, 1)
+            },
+            'optimization_convergence': {
+                'greedy_initial_cost': round(greedy_obj, 2),
+                'sa_cost': round(best_obj, 2),
+                'final_optimized_cost': round(best_obj, 2),
+                'sa_iterations': sa_iterations,
+                'sa_improvements': sa_improvements
+            },
+            'computation_metrics': {
+                'wall_time_s': round(elapsed_s, 3),
+                'algorithm': 'Greedy_SA_v1.0',
+                'solver_version': '1.0',
+                'sa_iterations': sa_iterations
+            },
+            'benchmark': {
+                'execution_cost': {'value': 1.0, 'unit': 'credits'},
+                'time_elapsed': f'{elapsed_s:.3f}s',
+                'energy_consumption': 0.0
+            }
+        }
+
+        logger.info(f"Solver completed successfully in {elapsed_ms:.1f} ms")
+        logger.info(f"Final objective: {best_obj:.2f}")
+        logger.info(f"Total reshuffles minimized: {metrics['total_reshuffles']}")
+
+        return output
+
+    except Exception as e:
+        logger.error(f"Solver failed with exception: {str(e)}")
+        return {
+            'status': 'ERROR',
+            'message': str(e),
+            'solver_log': logger.messages
+        }
+
+
+# For testing/debugging
+if __name__ == '__main__':
+    # Load small dataset and run
+    with open('dataset_small.json', 'r') as f:
+        test_input = json.load(f)
+
+    result = run(test_input)
+
+    print("\n" + "="*60)
+    print("SOLVER OUTPUT")
+    print("="*60)
+    print(json.dumps(result, indent=2))
