@@ -13,7 +13,10 @@ import time
 import math
 import random
 from copy import deepcopy
-from typing import Dict, List, Any, Tuple
+try:
+    from typing import Dict, List, Any, Tuple
+except ImportError:
+    pass
 from solver_helpers import (
     compute_reshuffles_for_stacking,
     is_feasible_assignment,
@@ -30,19 +33,19 @@ class QCentroidUserLogger:
     def __init__(self):
         self.messages = []
 
-    def info(self, msg: str):
+    def info(self, msg):
         self.messages.append({"level": "INFO", "message": msg})
         print(f"[INFO] {msg}")
 
-    def debug(self, msg: str):
+    def debug(self, msg):
         self.messages.append({"level": "DEBUG", "message": msg})
         print(f"[DEBUG] {msg}")
 
-    def warning(self, msg: str):
+    def warning(self, msg):
         self.messages.append({"level": "WARNING", "message": msg})
         print(f"[WARNING] {msg}")
 
-    def error(self, msg: str):
+    def error(self, msg):
         self.messages.append({"level": "ERROR", "message": msg})
         print(f"[ERROR] {msg}")
 
@@ -50,22 +53,13 @@ class QCentroidUserLogger:
 qcentroid_user_log = QCentroidUserLogger()
 
 
-def greedy_initial_stacking(containers: List[Dict[str, Any]], yard_layout: Dict[str, Any], logger) -> List[Dict[str, Any]]:
+def greedy_initial_stacking(containers, yard_layout, logger):
     """
     Greedy initialization: sort containers by vessel departure order and weight,
     then place them greedily in available positions.
-
-    Args:
-        containers: List of container dictionaries
-        yard_layout: Yard layout definition
-        logger: Logger instance
-
-    Returns:
-        Initial stacking plan (list of assignments)
     """
     logger.info(f"Starting greedy initialization with {len(containers)} containers")
 
-    # Sort containers: first by vessel departure order (earlier first), then by weight (heavier first)
     sorted_containers = sorted(
         containers,
         key=lambda c: (c['vessel_departure_order'], -c['weight_tonnes'])
@@ -73,40 +67,29 @@ def greedy_initial_stacking(containers: List[Dict[str, Any]], yard_layout: Dict[
 
     stacking_plan = []
     container_map = {c['id']: c for c in containers}
-
-    # Track usage of each position
-    stack_usage = {}  # (block, row, bay) -> current_tier (0-indexed, next available)
+    stack_usage = {}
 
     for container in sorted_containers:
         cid = container['id']
         weight = container['weight_tonnes']
-
-        # Try to find a suitable position
         placed = False
 
         for block in yard_layout['blocks']:
             if placed:
                 break
-
             block_id = block['block_id']
             max_tier = block['max_tier_height']
 
             for row_idx in range(block['rows']):
                 if placed:
                     break
-
                 for bay_idx in range(block['bays_per_row']):
                     stack_key = (block_id, row_idx, bay_idx)
                     current_tier = stack_usage.get(stack_key, 0)
 
-                    # Check if we can place in this stack
                     if current_tier < max_tier:
-                        # Check weight stability: would this placement violate weight constraints?
                         can_place = True
-
-                        # If tier > 0, check that container below is heavier
                         if current_tier > 0:
-                            # Find container below
                             for existing in stacking_plan:
                                 if (existing['assigned_block'] == block_id and
                                     existing['assigned_row'] == row_idx and
@@ -125,7 +108,7 @@ def greedy_initial_stacking(containers: List[Dict[str, Any]], yard_layout: Dict[
                                 'assigned_row': row_idx,
                                 'assigned_bay': bay_idx,
                                 'tier_level': current_tier,
-                                'reshuffles_if_retrieved_now': 0  # Will compute later
+                                'reshuffles_if_retrieved_now': 0
                             }
                             stacking_plan.append(assignment)
                             stack_usage[stack_key] = current_tier + 1
@@ -139,28 +122,17 @@ def greedy_initial_stacking(containers: List[Dict[str, Any]], yard_layout: Dict[
     return stacking_plan
 
 
-def two_opt_swap(stacking_plan: List[Dict[str, Any]], containers: Dict[str, Any], container_id_list: List[str], yard_layout: Dict[str, Any]) -> List[Dict[str, Any]]:
+def two_opt_swap(stacking_plan, containers, container_id_list, yard_layout):
     """
     Perform one 2-opt swap: try swapping two containers and keep if it improves objective.
-
-    Args:
-        stacking_plan: Current stacking plan
-        containers: Dict mapping container_id -> container info
-        container_id_list: List of all container IDs for iteration
-        yard_layout: Yard layout definition
-
-    Returns:
-        Updated stacking plan (may be same as input if no improvement found)
     """
     if len(stacking_plan) < 2:
         return stacking_plan
 
-    # Pick two random containers
     idx1, idx2 = random.sample(range(len(stacking_plan)), 2)
     assignment1 = stacking_plan[idx1]
     assignment2 = stacking_plan[idx2]
 
-    # Swap their locations
     new_plan = deepcopy(stacking_plan)
     new_plan[idx1]['assigned_block'] = assignment2['assigned_block']
     new_plan[idx1]['assigned_row'] = assignment2['assigned_row']
@@ -172,53 +144,31 @@ def two_opt_swap(stacking_plan: List[Dict[str, Any]], containers: Dict[str, Any]
     new_plan[idx2]['assigned_bay'] = assignment1['assigned_bay']
     new_plan[idx2]['tier_level'] = assignment1['tier_level']
 
-    # Check feasibility
     for assignment in new_plan:
         if not is_feasible_assignment(assignment, containers, yard_layout):
-            return stacking_plan  # Revert if infeasible
+            return stacking_plan
 
-    # Check weight stability
     if not check_weight_stability(new_plan, containers, yard_layout):
         return stacking_plan
 
     return new_plan
 
 
-def compute_objective(stacking_plan: List[Dict[str, Any]], containers: List[Dict[str, Any]], grouping_weight: float = 0.5) -> float:
+def compute_objective(stacking_plan, containers, grouping_weight=0.5):
     """
     Compute objective value: primarily minimize reshuffles, with secondary weight on grouping.
-
-    Args:
-        stacking_plan: Current stacking plan
-        containers: List of containers
-        grouping_weight: Weight for grouping penalty term (0-1)
-
-    Returns:
-        Objective value (lower is better)
     """
     total_reshuffles, _ = compute_reshuffles_for_stacking(stacking_plan, containers)
     grouping_score = compute_vessel_grouping_score(stacking_plan, containers)
-
-    # Grouping penalty: if score is low, add penalty
     grouping_penalty = (1.0 - grouping_score) * grouping_weight * 100
-
     objective = total_reshuffles + grouping_penalty
     return objective
 
 
-def simulated_annealing(stacking_plan: List[Dict[str, Any]], containers: List[Dict[str, Any]], yard_layout: Dict[str, Any], params: Dict[str, Any], logger) -> Tuple[List[Dict[str, Any]], float, int]:
+def simulated_annealing(stacking_plan, containers, yard_layout, params, logger):
     """
     Simulated Annealing optimization loop.
-
-    Args:
-        stacking_plan: Initial solution
-        containers: List of containers
-        yard_layout: Yard layout
-        params: Dict with max_iterations, temperature_init, cooling_rate, grouping_weight
-        logger: Logger
-
-    Returns:
-        (best_plan, best_objective, iterations_performed, improvements)
+    Returns: (best_plan, best_objective, iterations_performed, improvements)
     """
     max_iterations = params.get('max_iterations', 1000)
     temp_init = params.get('temperature_init', 50.0)
@@ -242,13 +192,11 @@ def simulated_annealing(stacking_plan: List[Dict[str, Any]], containers: List[Di
     logger.info(f"Initial objective: {current_obj:.2f}")
 
     while iteration < max_iterations and temperature > 0.01:
-        # Generate neighbor via 2-opt swap
         neighbor_plan = two_opt_swap(current_plan, container_map, container_id_list, yard_layout)
         neighbor_obj = compute_objective(neighbor_plan, containers, grouping_weight)
 
-        # Acceptance criterion
         delta = neighbor_obj - current_obj
-        if delta < 0:  # Improvement
+        if delta < 0:
             current_plan = neighbor_plan
             current_obj = neighbor_obj
             improvements += 1
@@ -257,14 +205,12 @@ def simulated_annealing(stacking_plan: List[Dict[str, Any]], containers: List[Di
                 best_plan = deepcopy(current_plan)
                 best_obj = current_obj
                 logger.debug(f"Iteration {iteration}: New best objective = {best_obj:.2f}")
-
-        else:  # Worse solution, accept with probability
+        else:
             probability = math.exp(-delta / temperature)
             if random.random() < probability:
                 current_plan = neighbor_plan
                 current_obj = neighbor_obj
 
-        # Cool down
         temperature *= cooling_rate
         iteration += 1
 
@@ -275,27 +221,17 @@ def simulated_annealing(stacking_plan: List[Dict[str, Any]], containers: List[Di
     return best_plan, best_obj, iteration, improvements
 
 
-def compute_output_metrics(stacking_plan: List[Dict[str, Any]], containers: List[Dict[str, Any]], yard_layout: Dict[str, Any]) -> Dict[str, Any]:
+def compute_output_metrics(stacking_plan, containers, yard_layout):
     """
     Compute all output metrics for the solution.
-
-    Args:
-        stacking_plan: Final stacking plan
-        containers: List of containers
-        yard_layout: Yard layout
-
-    Returns:
-        Dict with all metrics
     """
     container_map = {c['id']: c for c in containers}
 
     total_reshuffles, reshuffles_per_vessel = compute_reshuffles_for_stacking(stacking_plan, containers)
-
     block_util = compute_block_utilization(stacking_plan, yard_layout)
     grouping_score = compute_vessel_grouping_score(stacking_plan, containers)
     balance_score = compute_weight_balance_score(stacking_plan, container_map, yard_layout)
 
-    # Aggregate metrics
     metrics = {
         'total_reshuffles': total_reshuffles,
         'average_reshuffles_per_vessel': total_reshuffles / len(reshuffles_per_vessel) if reshuffles_per_vessel else 0.0,
@@ -306,26 +242,17 @@ def compute_output_metrics(stacking_plan: List[Dict[str, Any]], containers: List
         'reshuffles_per_vessel': reshuffles_per_vessel,
         'block_utilization': block_util
     }
-
     return metrics
 
 
-def generate_stacking_plan_output(stacking_plan: List[Dict[str, Any]], containers: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def generate_stacking_plan_output(stacking_plan, containers):
     """
     Generate output representation of stacking plan with reshuffles_if_retrieved_now computed.
-
-    Args:
-        stacking_plan: Internal stacking plan
-        containers: List of containers
-
-    Returns:
-        Output stacking plan
     """
     output_plan = []
     for assignment in stacking_plan:
         cid = assignment['id']
         reshuffles = estimate_reshuffles_single_container(cid, stacking_plan)
-
         output_assignment = {
             'id': cid,
             'assigned_block': assignment['assigned_block'],
@@ -335,17 +262,16 @@ def generate_stacking_plan_output(stacking_plan: List[Dict[str, Any]], container
             'reshuffles_if_retrieved_now': reshuffles
         }
         output_plan.append(output_assignment)
-
     return output_plan
 
 
-def run(input_data: Dict[str, Any], solver_params: Dict[str, Any] = None, extra_arguments: Dict[str, Any] = None) -> Dict[str, Any]:
+def run(input_data, solver_params=None, extra_arguments=None):
     """
     Main QCentroid solver entry point for Container Yard Stacking Optimization.
 
     Args:
-        input_data: Dict with structure {"data": {...}} containing containers, yard_layout, parameters
-        solver_params: Optional QCentroid solver parameters (e.g., quantum_fraction, timeout_seconds)
+        input_data: Dict with containers, yard_layout, parameters
+        solver_params: Optional QCentroid solver parameters
         extra_arguments: Optional extra arguments from user
 
     Returns:
@@ -355,7 +281,7 @@ def run(input_data: Dict[str, Any], solver_params: Dict[str, Any] = None, extra_
     start_time = time.time()
 
     try:
-        # Extract input data - handle both platform (input_data IS the data) and local (input_data has 'data' key)
+        # Extract input data - handle both wrapped and unwrapped formats
         if 'containers' in input_data:
             data = input_data
         else:
@@ -364,14 +290,12 @@ def run(input_data: Dict[str, Any], solver_params: Dict[str, Any] = None, extra_
         yard_layout = data.get('yard_layout', {})
         params = data.get('parameters', {})
 
-        # Merge with solver_params if provided
         if solver_params:
             params.update(solver_params)
 
-        logger.info(f"Container Yard Stacking Optimization Solver")
+        logger.info("Container Yard Stacking Optimization Solver")
         logger.info(f"Input: {len(containers)} containers, {yard_layout.get('total_blocks', 0)} yard blocks")
 
-        # Validate input
         if not containers or not yard_layout:
             logger.error("Invalid input: missing containers or yard_layout")
             return {"status": "ERROR", "message": "Missing required input data"}
@@ -389,7 +313,9 @@ def run(input_data: Dict[str, Any], solver_params: Dict[str, Any] = None, extra_
 
         # Step 2: Simulated Annealing optimization
         logger.info("Step 2: Simulated Annealing Optimization")
-        best_plan, best_obj, sa_iterations, sa_improvements = simulated_annealing(initial_plan, containers, yard_layout, params, logger)
+        best_plan, best_obj, sa_iterations, sa_improvements = simulated_annealing(
+            initial_plan, containers, yard_layout, params, logger
+        )
 
         elapsed_ms = (time.time() - start_time) * 1000
 
@@ -412,8 +338,6 @@ def run(input_data: Dict[str, Any], solver_params: Dict[str, Any] = None, extra_
                 'estimated_reshuffles': reshuffles,
                 'reshuffles_percentage': 100.0 * reshuffles / len(vessel_containers) if vessel_containers else 0.0
             })
-
-        # Sort by departure order
         vessel_summary.sort(key=lambda v: v['departure_order'])
 
         # Build output (QCentroid benchmark contract compliant)
@@ -472,14 +396,10 @@ def run(input_data: Dict[str, Any], solver_params: Dict[str, Any] = None, extra_
         }
 
 
-# For testing/debugging
 if __name__ == '__main__':
-    # Load small dataset and run
     with open('dataset_small.json', 'r') as f:
         test_input = json.load(f)
-
     result = run(test_input)
-
     print("\n" + "="*60)
     print("SOLVER OUTPUT")
     print("="*60)
