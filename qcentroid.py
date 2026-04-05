@@ -167,8 +167,8 @@ def compute_objective(stacking_plan, containers, grouping_weight=0.5):
 
 def simulated_annealing(stacking_plan, containers, yard_layout, params, logger):
     """
-    Simulated Annealing optimization loop.
-    Returns: (best_plan, best_objective, iterations_performed, improvements)
+    Simulated Annealing optimization loop with convergence history tracking.
+    Returns: (best_plan, best_objective, iterations_performed, improvements, convergence_history)
     """
     max_iterations = params.get('max_iterations', 1000)
     temp_init = params.get('temperature_init', 50.0)
@@ -187,6 +187,8 @@ def simulated_annealing(stacking_plan, containers, yard_layout, params, logger):
     temperature = temp_init
     iteration = 0
     improvements = 0
+    total_accepted = 0
+    convergence_history = []
 
     logger.info(f"Starting Simulated Annealing: T_init={temp_init}, cooling={cooling_rate}, max_iter={max_iterations}")
     logger.info(f"Initial objective: {current_obj:.2f}")
@@ -196,10 +198,12 @@ def simulated_annealing(stacking_plan, containers, yard_layout, params, logger):
         neighbor_obj = compute_objective(neighbor_plan, containers, grouping_weight)
 
         delta = neighbor_obj - current_obj
+        accepted = False
         if delta < 0:
             current_plan = neighbor_plan
             current_obj = neighbor_obj
             improvements += 1
+            accepted = True
 
             if current_obj < best_obj:
                 best_plan = deepcopy(current_plan)
@@ -210,15 +214,31 @@ def simulated_annealing(stacking_plan, containers, yard_layout, params, logger):
             if random.random() < probability:
                 current_plan = neighbor_plan
                 current_obj = neighbor_obj
+                accepted = True
+
+        if accepted:
+            total_accepted += 1
 
         temperature *= cooling_rate
         iteration += 1
+
+        # Record convergence history at regular intervals
+        if iteration % max(1, max_iterations // 50) == 0 or iteration == 1:
+            acceptance_rate = total_accepted / max(iteration, 1)
+            convergence_history.append({
+                'iteration': iteration,
+                'best_energy': round(best_obj, 2),
+                'current_energy': round(current_obj, 2),
+                'temperature': round(temperature, 4),
+                'acceptance_rate': round(acceptance_rate, 3),
+                'improvements_so_far': improvements
+            })
 
         if iteration % 100 == 0:
             logger.debug(f"Iteration {iteration}: current_obj={current_obj:.2f}, best_obj={best_obj:.2f}, T={temperature:.4f}")
 
     logger.info(f"SA completed: {iteration} iterations, {improvements} improvements, best_obj={best_obj:.2f}")
-    return best_plan, best_obj, iteration, improvements
+    return best_plan, best_obj, iteration, improvements, convergence_history
 
 
 def compute_output_metrics(stacking_plan, containers, yard_layout):
@@ -265,6 +285,118 @@ def generate_stacking_plan_output(stacking_plan, containers):
     return output_plan
 
 
+def generate_block_heatmap(stacking_plan, containers, yard_layout):
+    """
+    Generate rich per-block grid visualization data.
+    Each cell contains stack info: containers, weight, vessels, fill level.
+    """
+    container_map = {c['id']: c for c in containers}
+    heatmap = {}
+
+    for block in yard_layout['blocks']:
+        bid = block['block_id']
+        rows = block['rows']
+        bays = block['bays_per_row']
+        max_tier = block['max_tier_height']
+        grid = []
+
+        for r in range(rows):
+            row_data = []
+            for b in range(bays):
+                stack_containers = []
+                for a in stacking_plan:
+                    if a['assigned_block'] == bid and a['assigned_row'] == r and a['assigned_bay'] == b:
+                        c = container_map.get(a['id'], {})
+                        stack_containers.append({
+                            'id': a['id'],
+                            'tier': a['tier_level'],
+                            'weight': c.get('weight_tonnes', 0),
+                            'vessel': c.get('vessel_id', ''),
+                            'departure_order': c.get('vessel_departure_order', 0),
+                            'reshuffles_needed': estimate_reshuffles_single_container(a['id'], stacking_plan)
+                        })
+                stack_containers.sort(key=lambda x: x['tier'])
+                total_weight = sum(sc['weight'] for sc in stack_containers)
+                height = len(stack_containers)
+                vessels_in_stack = list(set(sc['vessel'] for sc in stack_containers))
+                row_data.append({
+                    'row': r,
+                    'bay': b,
+                    'height': height,
+                    'max_height': max_tier,
+                    'fill_pct': round(100 * height / max_tier, 1),
+                    'total_weight_tonnes': round(total_weight, 1),
+                    'vessels': vessels_in_stack,
+                    'vessel_mix': len(vessels_in_stack),
+                    'containers': stack_containers
+                })
+            grid.append(row_data)
+
+        block_containers = [a for a in stacking_plan if a['assigned_block'] == bid]
+        capacity = block['total_capacity']
+        heatmap[bid] = {
+            'block_id': bid,
+            'dimensions': {'rows': rows, 'bays': bays, 'max_tier': max_tier},
+            'total_containers': len(block_containers),
+            'capacity': capacity,
+            'utilization_pct': round(100 * len(block_containers) / capacity, 1) if capacity > 0 else 0,
+            'grid': grid
+        }
+
+    return heatmap
+
+
+def generate_vessel_timeline(stacking_plan, containers):
+    """
+    Generate vessel departure timeline with reshuffle forecast.
+    Shows per-vessel retrieval efficiency and cumulative reshuffles.
+    """
+    vessels = {}
+    for c in containers:
+        vid = c['vessel_id']
+        if vid not in vessels:
+            vessels[vid] = {'vessel_id': vid, 'departure_order': c['vessel_departure_order'], 'containers': []}
+        vessels[vid]['containers'].append(c)
+
+    _, reshuffles_per_vessel = compute_reshuffles_for_stacking(stacking_plan, containers)
+    timeline = []
+    cumulative = 0
+
+    for vid, info in sorted(vessels.items(), key=lambda x: x[1]['departure_order']):
+        r = reshuffles_per_vessel.get(vid, 0)
+        cumulative += r
+        n = len(info['containers'])
+        tw = sum(c['weight_tonnes'] for c in info['containers'])
+        eff = round(100 * (1 - r / max(n, 1)), 1)
+        timeline.append({
+            'vessel_id': vid,
+            'departure_order': info['departure_order'],
+            'num_containers': n,
+            'total_weight_tonnes': round(tw, 1),
+            'avg_weight_tonnes': round(tw / n, 1) if n > 0 else 0,
+            'reshuffles': r,
+            'cumulative_reshuffles': cumulative,
+            'retrieval_efficiency_pct': eff,
+            'status': 'clean' if r == 0 else ('minor' if r <= 2 else 'needs_attention')
+        })
+
+    return timeline
+
+
+def generate_convergence_chart_data(convergence_history):
+    """
+    Downsample convergence history to ~50 points for chart rendering.
+    """
+    n = len(convergence_history)
+    if n <= 50:
+        return convergence_history
+    step = max(1, n // 50)
+    sampled = [convergence_history[i] for i in range(0, n, step)]
+    if sampled[-1] != convergence_history[-1]:
+        sampled.append(convergence_history[-1])
+    return sampled
+
+
 def run(input_data, solver_params=None, extra_arguments=None):
     """
     Main QCentroid solver entry point for Container Yard Stacking Optimization.
@@ -275,7 +407,7 @@ def run(input_data, solver_params=None, extra_arguments=None):
         extra_arguments: Optional extra arguments from user
 
     Returns:
-        Dict with objective_value, benchmark, solution, and additional_output
+        Dict with objective_value, benchmark, solution, showcase, and additional_output
     """
     logger = qcentroid_user_log
     start_time = time.time()
@@ -294,6 +426,7 @@ def run(input_data, solver_params=None, extra_arguments=None):
             params.update(solver_params)
 
         logger.info("Container Yard Stacking Optimization Solver")
+        logger.info(f"Algorithm: Greedy Init + 2-opt + Simulated Annealing")
         logger.info(f"Input: {len(containers)} containers, {yard_layout.get('total_blocks', 0)} yard blocks")
 
         if not containers or not yard_layout:
@@ -301,7 +434,7 @@ def run(input_data, solver_params=None, extra_arguments=None):
             return {"status": "ERROR", "message": "Missing required input data"}
 
         # Step 1: Greedy initialization
-        logger.info("Step 1: Greedy Initialization")
+        logger.info("Phase 1: Greedy Initialization")
         initial_plan = greedy_initial_stacking(containers, yard_layout, logger)
 
         if not initial_plan:
@@ -312,15 +445,16 @@ def run(input_data, solver_params=None, extra_arguments=None):
         logger.info(f"Initial solution objective: {greedy_obj:.2f}")
 
         # Step 2: Simulated Annealing optimization
-        logger.info("Step 2: Simulated Annealing Optimization")
-        best_plan, best_obj, sa_iterations, sa_improvements = simulated_annealing(
+        logger.info("Phase 2: Simulated Annealing Optimization")
+        best_plan, best_obj, sa_iterations, sa_improvements, convergence_history = simulated_annealing(
             initial_plan, containers, yard_layout, params, logger
         )
 
         elapsed_ms = (time.time() - start_time) * 1000
+        elapsed_s = elapsed_ms / 1000.0
 
-        # Compute output metrics
-        logger.info("Step 3: Computing Output Metrics")
+        # Step 3: Compute output metrics
+        logger.info("Phase 3: Computing Metrics & Visualization Data")
         metrics = compute_output_metrics(best_plan, containers, yard_layout)
 
         # Generate output stacking plan
@@ -336,12 +470,18 @@ def run(input_data, solver_params=None, extra_arguments=None):
                 'departure_order': vessel_containers[0]['vessel_departure_order'] if vessel_containers else 0,
                 'total_containers': len(vessel_containers),
                 'estimated_reshuffles': reshuffles,
-                'reshuffles_percentage': 100.0 * reshuffles / len(vessel_containers) if vessel_containers else 0.0
+                'reshuffles_percentage': round(100.0 * reshuffles / len(vessel_containers), 1) if vessel_containers else 0.0
             })
         vessel_summary.sort(key=lambda v: v['departure_order'])
 
+        # Generate showcase visualization data
+        block_heatmap = generate_block_heatmap(best_plan, containers, yard_layout)
+        vessel_timeline = generate_vessel_timeline(best_plan, containers)
+        convergence_chart = generate_convergence_chart_data(convergence_history)
+
+        improvement_pct = round((1 - best_obj / max(greedy_obj, 0.01)) * 100, 1)
+
         # Build output (QCentroid benchmark contract compliant)
-        elapsed_s = elapsed_ms / 1000.0
         output = {
             'objective_value': round(best_obj, 2),
             'solution_status': 'optimal' if best_obj < greedy_obj else 'feasible',
@@ -349,17 +489,17 @@ def run(input_data, solver_params=None, extra_arguments=None):
             'reshuffling_summary': vessel_summary,
             'optimization_metrics': {
                 'total_reshuffles': metrics['total_reshuffles'],
-                'average_reshuffles_per_vessel': metrics['average_reshuffles_per_vessel'],
+                'average_reshuffles_per_vessel': round(metrics['average_reshuffles_per_vessel'], 2),
                 'max_reshuffles_single_vessel': metrics['max_reshuffles_single_vessel'],
-                'vessel_grouping_score': metrics['vessel_grouping_score'],
-                'stack_utilization': metrics['stack_utilization'],
-                'weight_balance_score': metrics['weight_balance_score']
+                'vessel_grouping_score': round(metrics['vessel_grouping_score'], 3),
+                'stack_utilization': round(metrics['stack_utilization'], 3),
+                'weight_balance_score': round(metrics['weight_balance_score'], 3)
             },
             'cost_breakdown': {
                 'total_reshuffles': metrics['total_reshuffles'],
                 'greedy_reshuffles': round(greedy_obj, 2),
                 'optimized_reshuffles': round(best_obj, 2),
-                'improvement_pct': round((1 - best_obj / max(greedy_obj, 1)) * 100, 1)
+                'improvement_pct': improvement_pct
             },
             'optimization_convergence': {
                 'greedy_initial_cost': round(greedy_obj, 2),
@@ -368,10 +508,28 @@ def run(input_data, solver_params=None, extra_arguments=None):
                 'sa_iterations': sa_iterations,
                 'sa_improvements': sa_improvements
             },
+            'showcase': {
+                'block_heatmap': block_heatmap,
+                'vessel_timeline': vessel_timeline,
+                'convergence_chart': convergence_chart,
+                'summary_dashboard': {
+                    'total_containers': len(containers),
+                    'total_placed': len(output_stacking_plan),
+                    'total_reshuffles': metrics['total_reshuffles'],
+                    'improvement_vs_greedy_pct': improvement_pct,
+                    'vessels_with_zero_reshuffles': sum(1 for v in vessel_summary if v['estimated_reshuffles'] == 0),
+                    'total_vessels': len(vessel_summary),
+                    'avg_stack_utilization_pct': round(metrics['stack_utilization'] * 100, 1),
+                    'weight_balance_score_pct': round(metrics['weight_balance_score'] * 100, 1),
+                    'vessel_grouping_score_pct': round(metrics['vessel_grouping_score'] * 100, 1),
+                    'solver_time_ms': round(elapsed_ms, 1),
+                    'algorithm': 'Classical SA (' + str(sa_iterations) + ' iterations)'
+                }
+            },
             'computation_metrics': {
                 'wall_time_s': round(elapsed_s, 3),
-                'algorithm': 'Greedy_SA_v1.0',
-                'solver_version': '1.0',
+                'algorithm': 'Greedy_SA_v1.1',
+                'solver_version': '1.1',
                 'sa_iterations': sa_iterations
             },
             'benchmark': {
@@ -382,17 +540,28 @@ def run(input_data, solver_params=None, extra_arguments=None):
         }
 
         logger.info(f"Solver completed successfully in {elapsed_ms:.1f} ms")
-        logger.info(f"Final objective: {best_obj:.2f}")
+        logger.info(f"Final objective: {best_obj:.2f} (improvement: {improvement_pct}%)")
         logger.info(f"Total reshuffles minimized: {metrics['total_reshuffles']}")
 
         return output
 
     except Exception as e:
         logger.error(f"Solver failed with exception: {str(e)}")
+        elapsed_s = (time.time() - start_time)
         return {
             'status': 'ERROR',
             'message': str(e),
-            'solver_log': logger.messages
+            'objective_value': 999999,
+            'solution_status': 'error',
+            'benchmark': {
+                'execution_cost': {'value': 1.0, 'unit': 'credits'},
+                'time_elapsed': f'{elapsed_s:.3f}s',
+                'energy_consumption': 0.0
+            },
+            'computation_metrics': {
+                'wall_time_s': round(elapsed_s, 3),
+                'algorithm': 'Greedy_SA_v1.1'
+            }
         }
 
 
