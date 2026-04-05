@@ -1,1 +1,9 @@
-IyBETyBOT1QgTU9ESUZZIC0tIHBsYXRmb3JtIHJlcGxhY2VzIHRoaXMgZmlsZSBhdCBydW50aW1lCmltcG9ydCBqc29uCndpdGggb3BlbigiaW5wdXQuanNvbiIpIGFzIGY6CiAgICBkaWMgPSBqc29uLmxvYWQoZikKZXh0cmFfYXJndW1lbnRzID0gZGljLmdldCgiZXh0cmFfYXJndW1lbnRzIiwge30pCnNvbHZlcl9wYXJhbXMgICA9IGRpYy5nZXQoInNvbHZlcl9wYXJhbXMiLCB7fSkKaW1wb3J0IG1haW4KcmVzdWx0ID0gbWFpbi5ydW4oZGljWyJkYXRhIl0sIHNvbHZlcl9wYXJhbXMsIGV4dHJhX2FyZ3VtZW50cykKcHJpbnQocmVzdWx0KQo=
+input_file_name = "input.json"
+import json
+with open(input_file_name) as f:
+    dic = json.load(f)
+extra_arguments = dic.get('extra_arguments', {})
+solver_params = dic.get('solver_params', {})
+import qcentroid
+result = qcentroid.run(dic['data'], solver_params, extra_arguments)
+print(result)
