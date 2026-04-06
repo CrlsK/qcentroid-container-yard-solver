@@ -261,7 +261,7 @@ def relocate_move(stacking_plan, containers, yard_layout):
 
     Args:
         stacking_plan: Current stacking plan
-        containers: Dict mapping container_id -> container info
+        containers: Dict or list of container info
         yard_layout: Yard layout definition
 
     Returns:
@@ -270,13 +270,17 @@ def relocate_move(stacking_plan, containers, yard_layout):
     if len(stacking_plan) == 0:
         return stacking_plan
 
-    container_map = {c['id']: c for c in containers}
+    # Defensive: accept both dict and list for containers
+    if isinstance(containers, dict):
+        container_map = containers
+    else:
+        container_map = {c['id']: c for c in containers}
 
     # Pick a random container to relocate
     idx = random.randint(0, len(stacking_plan) - 1)
     relocating_assignment = stacking_plan[idx]
     cid = relocating_assignment['id']
-    weight = containers[cid]['weight_tonnes']
+    weight = container_map[cid]['weight_tonnes']
 
     # Try to find a valid position in any block
     new_plan = deepcopy(stacking_plan)
@@ -381,7 +385,7 @@ def simulated_annealing(stacking_plan, containers, yard_layout, params, logger):
         logger: Logger
 
     Returns:
-        (best_plan, best_objective, iterations_performed, improvements)
+        (best_plan, best_objective, iterations_performed, improvements, convergence_history)
     """
     max_iterations = params.get('max_iterations', 2000)
     temp_init = params.get('temperature_init', 100.0)
