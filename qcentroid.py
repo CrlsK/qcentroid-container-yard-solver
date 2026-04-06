@@ -1,9 +1,10 @@
 """
-QCentroid Container Yard Stacking Optimization Solver
+QCentroid Container Yard Stacking Optimization Solver v2.0
 
 This solver optimizes container stacking arrangement in a yard to minimize
-reshuffles during vessel loading. Uses greedy initialization, 2-opt local search,
-and Simulated Annealing metaheuristic.
+reshuffles during vessel loading. Uses vessel-aware greedy initialization,
+2-opt swaps with relocation moves, and Simulated Annealing metaheuristic
+with weight balance objective.
 
 Entry point: run(input_data, solver_params, extra_arguments) -> dict
 """
@@ -33,21 +34,21 @@ class QCentroidUserLogger:
     def __init__(self):
         self.messages = []
 
-    def info(self, msg):
+    def info(self, msg: str):
         self.messages.append({"level": "INFO", "message": msg})
-        print(f"[INFO] {msg}")
+        print("[INFO] " + msg)
 
-    def debug(self, msg):
+    def debug(self, msg: str):
         self.messages.append({"level": "DEBUG", "message": msg})
-        print(f"[DEBUG] {msg}")
+        print("[DEBUG] " + msg)
 
-    def warning(self, msg):
+    def warning(self, msg: str):
         self.messages.append({"level": "WARNING", "message": msg})
-        print(f"[WARNING] {msg}")
+        print("[WARNING] " + msg)
 
-    def error(self, msg):
+    def error(self, msg: str):
         self.messages.append({"level": "ERROR", "message": msg})
-        print(f"[ERROR] {msg}")
+        print("[ERROR] " + msg)
 
 
 qcentroid_user_log = QCentroidUserLogger()
@@ -55,84 +56,181 @@ qcentroid_user_log = QCentroidUserLogger()
 
 def greedy_initial_stacking(containers, yard_layout, logger):
     """
-    Greedy initialization: sort containers by vessel departure order and weight,
-    then place them greedily in available positions.
-    """
-    logger.info(f"Starting greedy initialization with {len(containers)} containers")
+    Improved greedy initialization: vessel-aware block assignment.
 
-    sorted_containers = sorted(
-        containers,
-        key=lambda c: (c['vessel_departure_order'], -c['weight_tonnes'])
+    Containers from the same vessel are preferentially assigned to the same block
+    to promote grouping. Within a vessel, containers are sorted by departure order.
+    Blocks are selected to balance utilization across all blocks.
+
+    Args:
+        containers: List of container dictionaries
+        yard_layout: Yard layout definition
+        logger: Logger instance
+
+    Returns:
+        Initial stacking plan (list of assignments)
+    """
+    logger.info("Starting vessel-aware greedy initialization with " + str(len(containers)) + " containers")
+
+    # Group containers by vessel
+    vessel_groups = {}
+    for container in containers:
+        vessel_id = container['vessel_id']
+        if vessel_id not in vessel_groups:
+            vessel_groups[vessel_id] = []
+        vessel_groups[vessel_id].append(container)
+
+    # Sort vessels by departure order
+    sorted_vessels = sorted(
+        vessel_groups.items(),
+        key=lambda x: x[1][0]['vessel_departure_order']
     )
 
     stacking_plan = []
     container_map = {c['id']: c for c in containers}
-    stack_usage = {}
 
-    for container in sorted_containers:
-        cid = container['id']
-        weight = container['weight_tonnes']
-        placed = False
+    # Track usage of each position
+    stack_usage = {}  # (block, row, bay) -> current_tier (0-indexed, next available)
 
-        for block in yard_layout['blocks']:
-            if placed:
-                break
+    # Track block utilization for load balancing
+    block_capacities = {}
+    for block in yard_layout['blocks']:
+        block_capacities[block['block_id']] = {
+            'capacity': block['total_capacity'],
+            'used': 0
+        }
+
+    def find_preferred_block(vessel_id, yard_layout, block_capacities):
+        """Select a block for this vessel based on utilization balance."""
+        blocks = yard_layout['blocks']
+        available_blocks = []
+
+        for block in blocks:
             block_id = block['block_id']
-            max_tier = block['max_tier_height']
+            current_util = block_capacities[block_id]['used'] / block_capacities[block_id]['capacity']
+            available_capacity = block_capacities[block_id]['capacity'] - block_capacities[block_id]['used']
+            if available_capacity > 0:
+                available_blocks.append((block_id, current_util, available_capacity))
 
-            for row_idx in range(block['rows']):
+        if not available_blocks:
+            return None
+
+        # Select block with lowest utilization (load balancing)
+        available_blocks.sort(key=lambda x: x[1])
+        return available_blocks[0][0]
+
+    # Process each vessel's containers
+    for vessel_id, vessel_containers in sorted_vessels:
+        # Sort containers within vessel by weight (heavier first) for stability
+        vessel_containers_sorted = sorted(
+            vessel_containers,
+            key=lambda c: -c['weight_tonnes']
+        )
+
+        # Find preferred block for this vessel
+        preferred_block = find_preferred_block(vessel_id, yard_layout, block_capacities)
+
+        if preferred_block is None:
+            logger.warning("No available blocks for vessel " + str(vessel_id))
+            continue
+
+        # Try to place all containers from this vessel in the preferred block
+        for container in vessel_containers_sorted:
+            cid = container['id']
+            weight = container['weight_tonnes']
+
+            # Try preferred block first
+            placed = False
+            blocks_to_try = [preferred_block]
+
+            # If preferred block is full, try other blocks
+            if block_capacities[preferred_block]['used'] >= block_capacities[preferred_block]['capacity']:
+                blocks_to_try = [b['block_id'] for b in yard_layout['blocks'] if b['block_id'] != preferred_block]
+
+            for block_id in blocks_to_try:
                 if placed:
                     break
-                for bay_idx in range(block['bays_per_row']):
-                    stack_key = (block_id, row_idx, bay_idx)
-                    current_tier = stack_usage.get(stack_key, 0)
 
-                    if current_tier < max_tier:
-                        can_place = True
-                        if current_tier > 0:
-                            for existing in stacking_plan:
-                                if (existing['assigned_block'] == block_id and
-                                    existing['assigned_row'] == row_idx and
-                                    existing['assigned_bay'] == bay_idx and
-                                    existing['tier_level'] == current_tier - 1):
-                                    below_cid = existing['id']
-                                    below_weight = container_map[below_cid]['weight_tonnes']
-                                    if below_weight < weight:
-                                        can_place = False
-                                    break
+                block = None
+                for b in yard_layout['blocks']:
+                    if b['block_id'] == block_id:
+                        block = b
+                        break
 
-                        if can_place:
-                            assignment = {
-                                'id': cid,
-                                'assigned_block': block_id,
-                                'assigned_row': row_idx,
-                                'assigned_bay': bay_idx,
-                                'tier_level': current_tier,
-                                'reshuffles_if_retrieved_now': 0
-                            }
-                            stacking_plan.append(assignment)
-                            stack_usage[stack_key] = current_tier + 1
-                            placed = True
-                            break
+                if block is None:
+                    continue
 
-        if not placed:
-            logger.warning(f"Could not place container {cid} - yard may be full")
+                max_tier = block['max_tier_height']
 
-    logger.info(f"Greedy placement complete: {len(stacking_plan)} containers placed")
+                for row_idx in range(block['rows']):
+                    if placed:
+                        break
+
+                    for bay_idx in range(block['bays_per_row']):
+                        stack_key = (block_id, row_idx, bay_idx)
+                        current_tier = stack_usage.get(stack_key, 0)
+
+                        # Check if we can place in this stack
+                        if current_tier < max_tier:
+                            # Check weight stability
+                            can_place = True
+
+                            # If tier > 0, check that container below is heavier
+                            if current_tier > 0:
+                                for existing in stacking_plan:
+                                    if (existing['assigned_block'] == block_id and
+                                        existing['assigned_row'] == row_idx and
+                                        existing['assigned_bay'] == bay_idx and
+                                        existing['tier_level'] == current_tier - 1):
+                                        below_cid = existing['id']
+                                        below_weight = container_map[below_cid]['weight_tonnes']
+                                        if below_weight < weight:
+                                            can_place = False
+                                        break
+
+                            if can_place:
+                                assignment = {
+                                    'id': cid,
+                                    'assigned_block': block_id,
+                                    'assigned_row': row_idx,
+                                    'assigned_bay': bay_idx,
+                                    'tier_level': current_tier,
+                                    'reshuffles_if_retrieved_now': 0
+                                }
+                                stacking_plan.append(assignment)
+                                stack_usage[stack_key] = current_tier + 1
+                                block_capacities[block_id]['used'] += 1
+                                placed = True
+                                break
+
+            if not placed:
+                logger.warning("Could not place container " + str(cid))
+
+    logger.info("Greedy placement complete: " + str(len(stacking_plan)) + " containers placed")
     return stacking_plan
 
 
-def two_opt_swap(stacking_plan, containers, container_id_list, yard_layout):
+def two_opt_swap(stacking_plan, containers, yard_layout):
     """
-    Perform one 2-opt swap: try swapping two containers and keep if it improves objective.
+    Perform one 2-opt swap: swap positions of two containers.
+
+    Args:
+        stacking_plan: Current stacking plan
+        containers: Dict mapping container_id -> container info
+        yard_layout: Yard layout definition
+
+    Returns:
+        Updated stacking plan (may be same as input if no improvement found)
     """
     if len(stacking_plan) < 2:
         return stacking_plan
 
+    # Pick two random containers
     idx1, idx2 = random.sample(range(len(stacking_plan)), 2)
     assignment1 = stacking_plan[idx1]
     assignment2 = stacking_plan[idx2]
 
+    # Swap their locations
     new_plan = deepcopy(stacking_plan)
     new_plan[idx1]['assigned_block'] = assignment2['assigned_block']
     new_plan[idx1]['assigned_row'] = assignment2['assigned_row']
@@ -144,42 +242,157 @@ def two_opt_swap(stacking_plan, containers, container_id_list, yard_layout):
     new_plan[idx2]['assigned_bay'] = assignment1['assigned_bay']
     new_plan[idx2]['tier_level'] = assignment1['tier_level']
 
+    # Check feasibility
     for assignment in new_plan:
         if not is_feasible_assignment(assignment, containers, yard_layout):
             return stacking_plan
 
+    # Check weight stability
     if not check_weight_stability(new_plan, containers, yard_layout):
         return stacking_plan
 
     return new_plan
 
 
-def compute_objective(stacking_plan, containers, grouping_weight=0.5):
+def relocate_move(stacking_plan, containers, yard_layout):
     """
-    Compute objective value: primarily minimize reshuffles, with secondary weight on grouping.
+    Perform a relocate move: pick a random container and move it to a random valid
+    position in ANY block (including empty stacks in underutilized blocks).
+
+    Args:
+        stacking_plan: Current stacking plan
+        containers: Dict mapping container_id -> container info
+        yard_layout: Yard layout definition
+
+    Returns:
+        Updated stacking plan (may be same as input if relocation infeasible)
+    """
+    if len(stacking_plan) == 0:
+        return stacking_plan
+
+    container_map = {c['id']: c for c in containers}
+
+    # Pick a random container to relocate
+    idx = random.randint(0, len(stacking_plan) - 1)
+    relocating_assignment = stacking_plan[idx]
+    cid = relocating_assignment['id']
+    weight = containers[cid]['weight_tonnes']
+
+    # Try to find a valid position in any block
+    new_plan = deepcopy(stacking_plan)
+    blocks = yard_layout['blocks']
+
+    # Randomize block order for variety
+    block_order = list(range(len(blocks)))
+    random.shuffle(block_order)
+
+    for block_idx in block_order:
+        block = blocks[block_idx]
+        block_id = block['block_id']
+        max_tier = block['max_tier_height']
+
+        for row_idx in range(block['rows']):
+            for bay_idx in range(block['bays_per_row']):
+                # Find current tier in this stack
+                current_tier = 0
+                for assignment in new_plan:
+                    if (assignment['assigned_block'] == block_id and
+                        assignment['assigned_row'] == row_idx and
+                        assignment['assigned_bay'] == bay_idx):
+                        current_tier = max(current_tier, assignment['tier_level'] + 1)
+
+                # Can we place here?
+                if current_tier < max_tier:
+                    # Check weight stability
+                    can_place = True
+                    if current_tier > 0:
+                        for assignment in new_plan:
+                            if (assignment['assigned_block'] == block_id and
+                                assignment['assigned_row'] == row_idx and
+                                assignment['assigned_bay'] == bay_idx and
+                                assignment['tier_level'] == current_tier - 1):
+                                below_weight = container_map[assignment['id']]['weight_tonnes']
+                                if below_weight < weight:
+                                    can_place = False
+                                break
+
+                    if can_place:
+                        # Place the container here
+                        new_plan[idx]['assigned_block'] = block_id
+                        new_plan[idx]['assigned_row'] = row_idx
+                        new_plan[idx]['assigned_bay'] = bay_idx
+                        new_plan[idx]['tier_level'] = current_tier
+
+                        # Verify full plan is still feasible
+                        feasible = True
+                        for assignment in new_plan:
+                            if not is_feasible_assignment(assignment, containers, yard_layout):
+                                feasible = False
+                                break
+
+                        if feasible and check_weight_stability(new_plan, containers, yard_layout):
+                            return new_plan
+
+    # If no valid position found, return unchanged
+    return stacking_plan
+
+
+def compute_objective(stacking_plan, containers, grouping_weight=0.5, balance_weight=0.3, yard_layout=None):
+    """
+    Compute objective value: minimize reshuffles with secondary penalties for grouping
+    and weight balance.
+
+    Args:
+        stacking_plan: Current stacking plan
+        containers: List of containers
+        grouping_weight: Weight for grouping penalty term (0-1)
+        balance_weight: Weight for balance penalty term (0-1)
+        yard_layout: Optional yard layout for balance computation
+
+    Returns:
+        Objective value (lower is better)
     """
     total_reshuffles, _ = compute_reshuffles_for_stacking(stacking_plan, containers)
     grouping_score = compute_vessel_grouping_score(stacking_plan, containers)
+
+    # Grouping penalty: if score is low, add penalty
     grouping_penalty = (1.0 - grouping_score) * grouping_weight * 100
-    objective = total_reshuffles + grouping_penalty
+
+    # Weight balance penalty
+    balance_penalty = 0.0
+    if yard_layout and balance_weight > 0:
+        container_map = {c['id']: c for c in containers}
+        balance_score = compute_weight_balance_score(stacking_plan, container_map, yard_layout)
+        balance_penalty = (1.0 - balance_score) * balance_weight * 100
+
+    objective = total_reshuffles + grouping_penalty + balance_penalty
     return objective
 
 
 def simulated_annealing(stacking_plan, containers, yard_layout, params, logger):
     """
-    Simulated Annealing optimization loop with convergence history tracking.
-    Returns: (best_plan, best_objective, iterations_performed, improvements, convergence_history)
+    Simulated Annealing optimization loop with 60% swaps, 40% relocations.
+
+    Args:
+        stacking_plan: Initial solution
+        containers: List of containers
+        yard_layout: Yard layout
+        params: Dict with max_iterations, temperature_init, cooling_rate, grouping_weight
+        logger: Logger
+
+    Returns:
+        (best_plan, best_objective, iterations_performed, improvements)
     """
-    max_iterations = params.get('max_iterations', 1000)
-    temp_init = params.get('temperature_init', 50.0)
-    cooling_rate = params.get('cooling_rate', 0.95)
+    max_iterations = params.get('max_iterations', 2000)
+    temp_init = params.get('temperature_init', 100.0)
+    cooling_rate = params.get('cooling_rate', 0.995)
     grouping_weight = params.get('grouping_weight', 0.5)
+    balance_weight = params.get('balance_weight', 0.3)
 
     container_map = {c['id']: c for c in containers}
-    container_id_list = [c['id'] for c in containers]
 
     current_plan = deepcopy(stacking_plan)
-    current_obj = compute_objective(current_plan, containers, grouping_weight)
+    current_obj = compute_objective(current_plan, containers, grouping_weight, balance_weight, yard_layout)
 
     best_plan = deepcopy(current_plan)
     best_obj = current_obj
@@ -190,35 +403,44 @@ def simulated_annealing(stacking_plan, containers, yard_layout, params, logger):
     total_accepted = 0
     convergence_history = []
 
-    logger.info(f"Starting Simulated Annealing: T_init={temp_init}, cooling={cooling_rate}, max_iter={max_iterations}")
-    logger.info(f"Initial objective: {current_obj:.2f}")
+    logger.info("Starting Simulated Annealing: T_init=" + str(temp_init) + ", cooling=" + str(cooling_rate) + ", max_iter=" + str(max_iterations))
+    logger.info("Initial objective: " + str(round(current_obj, 2)))
 
     while iteration < max_iterations and temperature > 0.01:
-        neighbor_plan = two_opt_swap(current_plan, container_map, container_id_list, yard_layout)
-        neighbor_obj = compute_objective(neighbor_plan, containers, grouping_weight)
+        # Generate neighbor: 60% swaps, 40% relocations
+        if random.random() < 0.6:
+            neighbor_plan = two_opt_swap(current_plan, container_map, yard_layout)
+        else:
+            neighbor_plan = relocate_move(current_plan, container_map, yard_layout)
 
+        neighbor_obj = compute_objective(neighbor_plan, containers, grouping_weight, balance_weight, yard_layout)
+
+        # Acceptance criterion
         delta = neighbor_obj - current_obj
-        accepted = False
-        if delta < 0:
+        if delta < 0:  # Improvement
             current_plan = neighbor_plan
             current_obj = neighbor_obj
             improvements += 1
-            accepted = True
 
             if current_obj < best_obj:
                 best_plan = deepcopy(current_plan)
                 best_obj = current_obj
-                logger.debug(f"Iteration {iteration}: New best objective = {best_obj:.2f}")
-        else:
-            probability = math.exp(-delta / temperature)
+                logger.debug("Iteration " + str(iteration) + ": New best objective = " + str(round(best_obj, 2)))
+
+        else:  # Worse solution, accept with probability
+            try:
+                probability = math.exp(-delta / temperature)
+            except (OverflowError, ValueError):
+                probability = 0.0
             if random.random() < probability:
                 current_plan = neighbor_plan
                 current_obj = neighbor_obj
-                accepted = True
+                total_accepted += 1
 
-        if accepted:
+        if delta < 0:
             total_accepted += 1
 
+        # Cool down
         temperature *= cooling_rate
         iteration += 1
 
@@ -235,23 +457,43 @@ def simulated_annealing(stacking_plan, containers, yard_layout, params, logger):
             })
 
         if iteration % 100 == 0:
-            logger.debug(f"Iteration {iteration}: current_obj={current_obj:.2f}, best_obj={best_obj:.2f}, T={temperature:.4f}")
+            logger.debug("Iteration " + str(iteration) + ": current_obj=" + str(round(current_obj, 2)) + ", best_obj=" + str(round(best_obj, 2)) + ", T=" + str(round(temperature, 4)))
 
-    logger.info(f"SA completed: {iteration} iterations, {improvements} improvements, best_obj={best_obj:.2f}")
+    # Record final convergence point
+    convergence_history.append({
+        'iteration': iteration,
+        'best_energy': round(best_obj, 2),
+        'current_energy': round(current_obj, 2),
+        'temperature': round(temperature, 4),
+        'acceptance_rate': round(total_accepted / max(iteration, 1), 3),
+        'improvements_so_far': improvements
+    })
+
+    logger.info("SA completed: " + str(iteration) + " iterations, " + str(improvements) + " improvements, best_obj=" + str(round(best_obj, 2)))
     return best_plan, best_obj, iteration, improvements, convergence_history
 
 
 def compute_output_metrics(stacking_plan, containers, yard_layout):
     """
     Compute all output metrics for the solution.
+
+    Args:
+        stacking_plan: Final stacking plan
+        containers: List of containers
+        yard_layout: Yard layout
+
+    Returns:
+        Dict with all metrics
     """
     container_map = {c['id']: c for c in containers}
 
     total_reshuffles, reshuffles_per_vessel = compute_reshuffles_for_stacking(stacking_plan, containers)
+
     block_util = compute_block_utilization(stacking_plan, yard_layout)
     grouping_score = compute_vessel_grouping_score(stacking_plan, containers)
     balance_score = compute_weight_balance_score(stacking_plan, container_map, yard_layout)
 
+    # Aggregate metrics
     metrics = {
         'total_reshuffles': total_reshuffles,
         'average_reshuffles_per_vessel': total_reshuffles / len(reshuffles_per_vessel) if reshuffles_per_vessel else 0.0,
@@ -262,17 +504,26 @@ def compute_output_metrics(stacking_plan, containers, yard_layout):
         'reshuffles_per_vessel': reshuffles_per_vessel,
         'block_utilization': block_util
     }
+
     return metrics
 
 
 def generate_stacking_plan_output(stacking_plan, containers):
     """
     Generate output representation of stacking plan with reshuffles_if_retrieved_now computed.
+
+    Args:
+        stacking_plan: Internal stacking plan
+        containers: List of containers
+
+    Returns:
+        Output stacking plan
     """
     output_plan = []
     for assignment in stacking_plan:
         cid = assignment['id']
         reshuffles = estimate_reshuffles_single_container(cid, stacking_plan)
+
         output_assignment = {
             'id': cid,
             'assigned_block': assignment['assigned_block'],
@@ -282,6 +533,7 @@ def generate_stacking_plan_output(stacking_plan, containers):
             'reshuffles_if_retrieved_now': reshuffles
         }
         output_plan.append(output_assignment)
+
     return output_plan
 
 
@@ -399,21 +651,21 @@ def generate_convergence_chart_data(convergence_history):
 
 def run(input_data, solver_params=None, extra_arguments=None):
     """
-    Main QCentroid solver entry point for Container Yard Stacking Optimization.
+    Main QCentroid solver entry point for Container Yard Stacking Optimization v2.0.
 
     Args:
-        input_data: Dict with containers, yard_layout, parameters
-        solver_params: Optional QCentroid solver parameters
+        input_data: Dict with structure {"data": {...}} containing containers, yard_layout, parameters
+        solver_params: Optional QCentroid solver parameters (e.g., quantum_fraction, timeout_seconds)
         extra_arguments: Optional extra arguments from user
 
     Returns:
-        Dict with objective_value, benchmark, solution, showcase, and additional_output
+        Dict with objective_value, benchmark, solution, and additional_output
     """
     logger = qcentroid_user_log
     start_time = time.time()
 
     try:
-        # Extract input data - handle both wrapped and unwrapped formats
+        # Extract input data — handle both platform (input_data IS the data) and local (input_data has 'data' key)
         if 'containers' in input_data:
             data = input_data
         else:
@@ -422,39 +674,53 @@ def run(input_data, solver_params=None, extra_arguments=None):
         yard_layout = data.get('yard_layout', {})
         params = data.get('parameters', {})
 
+        # Merge with solver_params if provided
         if solver_params:
             params.update(solver_params)
 
-        logger.info("Container Yard Stacking Optimization Solver")
-        logger.info(f"Algorithm: Greedy Init + 2-opt + Simulated Annealing")
-        logger.info(f"Input: {len(containers)} containers, {yard_layout.get('total_blocks', 0)} yard blocks")
+        logger.info("Container Yard Stacking Optimization Solver v2.0")
+        logger.info("Input: " + str(len(containers)) + " containers, " + str(yard_layout.get('total_blocks', 0)) + " yard blocks")
 
+        # Validate input
         if not containers or not yard_layout:
             logger.error("Invalid input: missing containers or yard_layout")
-            return {"status": "ERROR", "message": "Missing required input data"}
+            return {
+                "status": "ERROR",
+                "message": "Missing required input data",
+                "benchmark": {
+                    "execution_cost": {"value": 0.0, "unit": "credits"},
+                    "time_elapsed": "0.0s",
+                    "energy_consumption": 0.0
+                }
+            }
 
-        # Step 1: Greedy initialization
-        logger.info("Phase 1: Greedy Initialization")
+        # Step 1: Vessel-aware greedy initialization
+        logger.info("Step 1: Vessel-Aware Greedy Initialization")
         initial_plan = greedy_initial_stacking(containers, yard_layout, logger)
 
         if not initial_plan:
             logger.error("Greedy initialization failed")
-            return {"status": "ERROR", "message": "Failed to create initial stacking plan"}
+            return {
+                "status": "ERROR",
+                "message": "Failed to create initial stacking plan",
+                "benchmark": {
+                    "execution_cost": {"value": 0.0, "unit": "credits"},
+                    "time_elapsed": "0.0s",
+                    "energy_consumption": 0.0
+                }
+            }
 
-        greedy_obj = compute_objective(initial_plan, containers, params.get('grouping_weight', 0.5))
-        logger.info(f"Initial solution objective: {greedy_obj:.2f}")
+        greedy_obj = compute_objective(initial_plan, containers, params.get('grouping_weight', 0.5), params.get('balance_weight', 0.3), yard_layout)
+        logger.info("Initial solution objective: " + str(round(greedy_obj, 2)))
 
         # Step 2: Simulated Annealing optimization
-        logger.info("Phase 2: Simulated Annealing Optimization")
-        best_plan, best_obj, sa_iterations, sa_improvements, convergence_history = simulated_annealing(
-            initial_plan, containers, yard_layout, params, logger
-        )
+        logger.info("Step 2: Simulated Annealing Optimization (with relocations)")
+        best_plan, best_obj, sa_iterations, sa_improvements, convergence_history = simulated_annealing(initial_plan, containers, yard_layout, params, logger)
 
         elapsed_ms = (time.time() - start_time) * 1000
-        elapsed_s = elapsed_ms / 1000.0
 
-        # Step 3: Compute output metrics
-        logger.info("Phase 3: Computing Metrics & Visualization Data")
+        # Compute output metrics
+        logger.info("Step 3: Computing Output Metrics")
         metrics = compute_output_metrics(best_plan, containers, yard_layout)
 
         # Generate output stacking plan
@@ -470,18 +736,19 @@ def run(input_data, solver_params=None, extra_arguments=None):
                 'departure_order': vessel_containers[0]['vessel_departure_order'] if vessel_containers else 0,
                 'total_containers': len(vessel_containers),
                 'estimated_reshuffles': reshuffles,
-                'reshuffles_percentage': round(100.0 * reshuffles / len(vessel_containers), 1) if vessel_containers else 0.0
+                'reshuffles_percentage': 100.0 * reshuffles / len(vessel_containers) if vessel_containers else 0.0
             })
+
+        # Sort by departure order
         vessel_summary.sort(key=lambda v: v['departure_order'])
 
-        # Generate showcase visualization data
+        # Generate showcase visualizations
         block_heatmap = generate_block_heatmap(best_plan, containers, yard_layout)
         vessel_timeline = generate_vessel_timeline(best_plan, containers)
         convergence_chart = generate_convergence_chart_data(convergence_history)
 
-        improvement_pct = round((1 - best_obj / max(greedy_obj, 0.01)) * 100, 1)
-
         # Build output (QCentroid benchmark contract compliant)
+        elapsed_s = elapsed_ms / 1000.0
         output = {
             'objective_value': round(best_obj, 2),
             'solution_status': 'optimal' if best_obj < greedy_obj else 'feasible',
@@ -499,7 +766,7 @@ def run(input_data, solver_params=None, extra_arguments=None):
                 'total_reshuffles': metrics['total_reshuffles'],
                 'greedy_reshuffles': round(greedy_obj, 2),
                 'optimized_reshuffles': round(best_obj, 2),
-                'improvement_pct': improvement_pct
+                'improvement_pct': round((1 - best_obj / max(greedy_obj, 1)) * 100, 1)
             },
             'optimization_convergence': {
                 'greedy_initial_cost': round(greedy_obj, 2),
@@ -516,59 +783,61 @@ def run(input_data, solver_params=None, extra_arguments=None):
                     'total_containers': len(containers),
                     'total_placed': len(output_stacking_plan),
                     'total_reshuffles': metrics['total_reshuffles'],
-                    'improvement_vs_greedy_pct': improvement_pct,
+                    'improvement_vs_greedy_pct': round((1 - best_obj / max(greedy_obj, 0.01)) * 100, 1),
                     'vessels_with_zero_reshuffles': sum(1 for v in vessel_summary if v['estimated_reshuffles'] == 0),
                     'total_vessels': len(vessel_summary),
                     'avg_stack_utilization_pct': round(metrics['stack_utilization'] * 100, 1),
                     'weight_balance_score_pct': round(metrics['weight_balance_score'] * 100, 1),
                     'vessel_grouping_score_pct': round(metrics['vessel_grouping_score'] * 100, 1),
                     'solver_time_ms': round(elapsed_ms, 1),
-                    'algorithm': 'Classical SA (' + str(sa_iterations) + ' iterations)'
+                    'algorithm': 'Classical SA v2.0 (' + str(sa_iterations) + ' iterations)'
                 }
             },
             'computation_metrics': {
                 'wall_time_s': round(elapsed_s, 3),
-                'algorithm': 'Greedy_SA_v1.1',
-                'solver_version': '1.1',
-                'sa_iterations': sa_iterations
+                'algorithm': 'Greedy_SA_v2.0',
+                'solver_version': '2.0',
+                'sa_iterations': sa_iterations,
+                'sa_improvements': sa_improvements,
+                'move_strategy': '60pct_swap_40pct_relocate'
             },
             'benchmark': {
                 'execution_cost': {'value': 1.0, 'unit': 'credits'},
-                'time_elapsed': f'{elapsed_s:.3f}s',
+                'time_elapsed': str(round(elapsed_s, 3)) + 's',
                 'energy_consumption': 0.0
             }
         }
 
-        logger.info(f"Solver completed successfully in {elapsed_ms:.1f} ms")
-        logger.info(f"Final objective: {best_obj:.2f} (improvement: {improvement_pct}%)")
-        logger.info(f"Total reshuffles minimized: {metrics['total_reshuffles']}")
+        logger.info("Solver completed successfully in " + str(round(elapsed_ms, 1)) + " ms")
+        logger.info("Final objective: " + str(round(best_obj, 2)))
+        logger.info("Total reshuffles minimized: " + str(metrics['total_reshuffles']))
 
         return output
 
     except Exception as e:
-        logger.error(f"Solver failed with exception: {str(e)}")
-        elapsed_s = (time.time() - start_time)
+        elapsed_ms = (time.time() - start_time) * 1000
+        elapsed_s = elapsed_ms / 1000.0
+        logger.error("Solver failed with exception: " + str(e))
         return {
             'status': 'ERROR',
             'message': str(e),
-            'objective_value': 999999,
-            'solution_status': 'error',
+            'solver_log': logger.messages,
             'benchmark': {
-                'execution_cost': {'value': 1.0, 'unit': 'credits'},
-                'time_elapsed': f'{elapsed_s:.3f}s',
+                'execution_cost': {'value': 0.0, 'unit': 'credits'},
+                'time_elapsed': str(round(elapsed_s, 3)) + 's',
                 'energy_consumption': 0.0
-            },
-            'computation_metrics': {
-                'wall_time_s': round(elapsed_s, 3),
-                'algorithm': 'Greedy_SA_v1.1'
             }
         }
 
 
+# For testing/debugging
 if __name__ == '__main__':
+    # Load small dataset and run
     with open('dataset_small.json', 'r') as f:
         test_input = json.load(f)
+
     result = run(test_input)
+
     print("\n" + "="*60)
     print("SOLVER OUTPUT")
     print("="*60)
