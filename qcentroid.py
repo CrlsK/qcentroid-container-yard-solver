@@ -1,14 +1,17 @@
 """
-QCentroid Container Yard Stacking Optimization Solver v2.1
+QCentroid Container Yard Stacking Optimization Solver v2.2
 
-v2.1 (this rev): adds additional_output block (visualizations + kpi_dashboard + reports + narrative)
-                 so the platform's Additional Output tab renders. showcase kept as superset.
+v2.2 (this rev): writes visualization artifacts (PNG/HTML/JSON/CSV) into
+                 ./additional_output/ so the platform exposes them as
+                 downloadable files in the Additional Output tab.
+v2.1: added additional_output block (visualizations + kpi_dashboard + reports + narrative).
 v2.0: vessel-aware greedy + 2-opt swaps with relocation moves + SA with weight balance objective.
 
 Entry point: run(input_data, solver_params, extra_arguments) -> dict
 """
 
 import json
+import os
 import time
 import math
 import random
@@ -26,6 +29,10 @@ from solver_helpers import (
     compute_weight_balance_score,
     estimate_reshuffles_single_container
 )
+try:
+    from viz import generate_additional_output
+except Exception:
+    generate_additional_output = None
 
 
 class QCentroidUserLogger:
@@ -341,7 +348,7 @@ def run(input_data, solver_params=None, extra_arguments=None):
             'schema_version': '1.0',
             'use_case': 'container-yard-stacking-optimization',
             'solver_family': 'classical',
-            'solver_version': '2.1',
+            'solver_version': '2.2',
             'visualizations': [
                 {'name': 'block_heatmap', 'type': 'grid', 'description': 'Top-down per-block container layout (rows × bays). Each cell shows stack height, dominant vessel, weight, and reshuffle indicator.', 'data': block_heatmap},
                 {'name': 'vessel_timeline', 'type': 'timeline', 'description': 'Per-vessel reshuffle forecast in departure order with cumulative deltas and retrieval efficiency.', 'data': vessel_timeline},
@@ -357,6 +364,28 @@ def run(input_data, solver_params=None, extra_arguments=None):
             'narrative': ('Classical Greedy + Simulated Annealing placed all ' + str(len(output_stacking_plan)) + '/' + str(len(containers)) + ' containers; SA performed ' + str(sa_iterations) + ' iterations with ' + str(sa_improvements) + ' improvement moves; achieved ' + str(improvement_pct) + '% improvement vs greedy initialization. Solution requires ' + str(metrics['total_reshuffles']) + ' reshuffle(s) total; ' + str(sum(1 for v in vessel_summary if v["estimated_reshuffles"] == 0)) + '/' + str(len(vessel_summary)) + ' vessels can be loaded without reshuffles.')
         }
 
+        # Write visualization files into ./additional_output/ for the platform tab.
+        files_meta = {"out_dir": None, "files": []}
+        if generate_additional_output is not None:
+            try:
+                files_meta = generate_additional_output(
+                    containers=containers,
+                    yard_layout=yard_layout,
+                    stacking_plan=output_stacking_plan,
+                    block_heatmap=block_heatmap,
+                    vessel_timeline=vessel_timeline,
+                    convergence_history=convergence_chart,
+                    kpi_dashboard=kpi_dashboard,
+                    narrative=additional_output['narrative'],
+                    out_dir=os.path.join(os.getcwd(), 'additional_output'),
+                    logger=logger,
+                )
+                logger.info("additional_output: wrote " + str(len(files_meta.get('files', []))) + " files to " + str(files_meta.get('out_dir')))
+            except Exception as e:
+                logger.warning("additional_output generation failed: " + str(e))
+        additional_output['files'] = files_meta.get('files', [])
+        additional_output['files_dir'] = files_meta.get('out_dir')
+
         output = {
             'objective_value': round(best_obj, 2),
             'solution_status': 'optimal' if best_obj < greedy_obj else 'feasible',
@@ -370,7 +399,7 @@ def run(input_data, solver_params=None, extra_arguments=None):
             'optimization_convergence': {'greedy_initial_cost': round(greedy_obj, 2), 'sa_cost': round(best_obj, 2), 'final_optimized_cost': round(best_obj, 2), 'sa_iterations': sa_iterations, 'sa_improvements': sa_improvements},
             'showcase': {'block_heatmap': block_heatmap, 'vessel_timeline': vessel_timeline, 'convergence_chart': convergence_chart, 'summary_dashboard': kpi_dashboard},
             'additional_output': additional_output,
-            'computation_metrics': {'wall_time_s': round(elapsed_s, 3), 'algorithm': 'Greedy_SA_v2.1', 'solver_version': '2.1', 'sa_iterations': sa_iterations, 'sa_improvements': sa_improvements, 'move_strategy': '60pct_swap_40pct_relocate'},
+            'computation_metrics': {'wall_time_s': round(elapsed_s, 3), 'algorithm': 'Greedy_SA_v2.2', 'solver_version': '2.2', 'sa_iterations': sa_iterations, 'sa_improvements': sa_improvements, 'move_strategy': '60pct_swap_40pct_relocate'},
             'benchmark': {'execution_cost': {'value': 1.0, 'unit': 'credits'}, 'time_elapsed': str(round(elapsed_s, 3)) + 's', 'energy_consumption': 0.0}
         }
         logger.info("Solver completed successfully in " + str(round(elapsed_ms, 1)) + " ms")

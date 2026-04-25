@@ -1,1 +1,1 @@
-# No external dependencies - pure Python solver
+matplotlib>=3.5
