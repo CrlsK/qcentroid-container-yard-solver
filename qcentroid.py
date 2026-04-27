@@ -1,11 +1,12 @@
 """
-QCentroid Container Yard Stacking Optimization Solver v2.2
+QCentroid Container Yard Stacking Optimization Solver v2.3
 
-v2.2 (this rev): writes visualization artifacts (PNG/HTML/JSON/CSV) into
-                 ./additional_output/ so the platform exposes them as
-                 downloadable files in the Additional Output tab.
-v2.1: added additional_output block (visualizations + kpi_dashboard + reports + narrative).
-v2.0: vessel-aware greedy + 2-opt swaps with relocation moves + SA with weight balance objective.
+v2.3 (this rev): adaptive SA budget by problem size + business-cost framing
+                 ($25–$50/reshuffle from the use case business description) in
+                 the additional_output dashboards.
+v2.2: file-based additional_output (PNG/HTML/JSON/CSV/interactive Plotly).
+v2.1: added in-output additional_output block (kpi_dashboard + narrative).
+v2.0: vessel-aware greedy + 2-opt swaps + relocation + SA with weight balance.
 
 Entry point: run(input_data, solver_params, extra_arguments) -> dict
 """
@@ -302,8 +303,17 @@ def run(input_data, solver_params=None, extra_arguments=None):
         else: data = input_data.get('data', input_data)
         containers = data.get('containers', []); yard_layout = data.get('yard_layout', {}); params = data.get('parameters', {})
         if solver_params: params.update(solver_params)
-        logger.info("Container Yard Stacking Optimization Solver v2.1")
+        logger.info("Container Yard Stacking Optimization Solver v2.3")
         logger.info("Input: " + str(len(containers)) + " containers, " + str(yard_layout.get('total_blocks', 0)) + " yard blocks")
+        # ── Iter 1: adaptive SA budget — scale max_iterations with N for large yards ──
+        n = len(containers)
+        if n >= 60:
+            params.setdefault('max_iterations', 5000)
+        elif n >= 20:
+            params.setdefault('max_iterations', 2500)
+        else:
+            params.setdefault('max_iterations', 1500)
+        logger.info("Adaptive SA budget: max_iterations=" + str(params['max_iterations']))
         if not containers or not yard_layout:
             return {"status": "ERROR", "message": "Missing required input data", "objective_value": 999999, "solution_status": "error", "benchmark": {"execution_cost": {"value": 0.0, "unit": "credits"}, "time_elapsed": "0.0s", "energy_consumption": 0.0}}
         logger.info("Step 1: Vessel-Aware Greedy Initialization")
@@ -348,7 +358,7 @@ def run(input_data, solver_params=None, extra_arguments=None):
             'schema_version': '1.0',
             'use_case': 'container-yard-stacking-optimization',
             'solver_family': 'classical',
-            'solver_version': '2.2',
+            'solver_version': '2.3',
             'visualizations': [
                 {'name': 'block_heatmap', 'type': 'grid', 'description': 'Top-down per-block container layout (rows × bays). Each cell shows stack height, dominant vessel, weight, and reshuffle indicator.', 'data': block_heatmap},
                 {'name': 'vessel_timeline', 'type': 'timeline', 'description': 'Per-vessel reshuffle forecast in departure order with cumulative deltas and retrieval efficiency.', 'data': vessel_timeline},
@@ -399,7 +409,7 @@ def run(input_data, solver_params=None, extra_arguments=None):
             'optimization_convergence': {'greedy_initial_cost': round(greedy_obj, 2), 'sa_cost': round(best_obj, 2), 'final_optimized_cost': round(best_obj, 2), 'sa_iterations': sa_iterations, 'sa_improvements': sa_improvements},
             'showcase': {'block_heatmap': block_heatmap, 'vessel_timeline': vessel_timeline, 'convergence_chart': convergence_chart, 'summary_dashboard': kpi_dashboard},
             'additional_output': additional_output,
-            'computation_metrics': {'wall_time_s': round(elapsed_s, 3), 'algorithm': 'Greedy_SA_v2.2', 'solver_version': '2.2', 'sa_iterations': sa_iterations, 'sa_improvements': sa_improvements, 'move_strategy': '60pct_swap_40pct_relocate'},
+            'computation_metrics': {'wall_time_s': round(elapsed_s, 3), 'algorithm': 'Greedy_SA_v2.3', 'solver_version': '2.3', 'sa_iterations': sa_iterations, 'sa_improvements': sa_improvements, 'move_strategy': '60pct_swap_40pct_relocate', 'max_iterations_used': params.get('max_iterations')},
             'benchmark': {'execution_cost': {'value': 1.0, 'unit': 'credits'}, 'time_elapsed': str(round(elapsed_s, 3)) + 's', 'energy_consumption': 0.0}
         }
         logger.info("Solver completed successfully in " + str(round(elapsed_ms, 1)) + " ms")
