@@ -1,9 +1,11 @@
 """
-QCentroid Container Yard Stacking Optimization Solver v2.3
+QCentroid Container Yard Stacking Optimization Solver v2.4
 
-v2.3 (this rev): adaptive SA budget by problem size + business-cost framing
-                 ($25–$50/reshuffle from the use case business description) in
-                 the additional_output dashboards.
+v2.4 (this rev): Iter2 — back-off adaptive SA budget for medium/large (it caused
+                 over-annealing regression vs v2.2); only boost iterations for
+                 small problems where exploration matters more than convergence.
+                 Cost framing now in the in-output dict too (not just file).
+v2.3: adaptive SA budget (regressed on medium/large — see v2.4).
 v2.2: file-based additional_output (PNG/HTML/JSON/CSV/interactive Plotly).
 v2.1: added in-output additional_output block (kpi_dashboard + narrative).
 v2.0: vessel-aware greedy + 2-opt swaps + relocation + SA with weight balance.
@@ -303,17 +305,15 @@ def run(input_data, solver_params=None, extra_arguments=None):
         else: data = input_data.get('data', input_data)
         containers = data.get('containers', []); yard_layout = data.get('yard_layout', {}); params = data.get('parameters', {})
         if solver_params: params.update(solver_params)
-        logger.info("Container Yard Stacking Optimization Solver v2.3")
+        logger.info("Container Yard Stacking Optimization Solver v2.4")
         logger.info("Input: " + str(len(containers)) + " containers, " + str(yard_layout.get('total_blocks', 0)) + " yard blocks")
-        # ── Iter 1: adaptive SA budget — scale max_iterations with N for large yards ──
+        # ── Iter 2: revert v2.3 adaptive (caused over-annealing on medium/large).
+        # Keep modest boost only for small problems where SA spends time well.
         n = len(containers)
-        if n >= 60:
-            params.setdefault('max_iterations', 5000)
-        elif n >= 20:
+        if n < 20:
             params.setdefault('max_iterations', 2500)
-        else:
-            params.setdefault('max_iterations', 1500)
-        logger.info("Adaptive SA budget: max_iterations=" + str(params['max_iterations']))
+        # else: leave default (2000) — v2.2 baseline configuration that worked best
+        logger.info("SA budget: max_iterations=" + str(params.get('max_iterations', 2000)))
         if not containers or not yard_layout:
             return {"status": "ERROR", "message": "Missing required input data", "objective_value": 999999, "solution_status": "error", "benchmark": {"execution_cost": {"value": 0.0, "unit": "credits"}, "time_elapsed": "0.0s", "energy_consumption": 0.0}}
         logger.info("Step 1: Vessel-Aware Greedy Initialization")
@@ -340,6 +340,9 @@ def run(input_data, solver_params=None, extra_arguments=None):
 
         improvement_pct = round((1 - best_obj / max(greedy_obj, 0.01)) * 100, 1)
 
+        # ── Iter 2: business-cost framing in the in-output dict too (USD per reshuffle from use case business desc) ──
+        _COST_LOW, _COST_HIGH = 25.0, 50.0
+        _cost_mid = (_COST_LOW + _COST_HIGH) / 2
         kpi_dashboard = {
             'objective_value': round(best_obj, 2),
             'total_reshuffles': metrics['total_reshuffles'],
@@ -350,7 +353,11 @@ def run(input_data, solver_params=None, extra_arguments=None):
             'weight_balance_score_pct': round(metrics['weight_balance_score'] * 100, 1),
             'vessel_grouping_score_pct': round(metrics['vessel_grouping_score'] * 100, 1),
             'wall_time_s': round(elapsed_s, 3),
-            'algorithm': 'Classical SA v2.1 (' + str(sa_iterations) + ' iterations)'
+            'algorithm': 'Classical SA v2.4 (' + str(sa_iterations) + ' iterations)',
+            'estimated_reshuffle_cost_usd_low':  round(metrics['total_reshuffles'] * _COST_LOW, 0),
+            'estimated_reshuffle_cost_usd_high': round(metrics['total_reshuffles'] * _COST_HIGH, 0),
+            'estimated_reshuffle_cost_usd_mid':  round(metrics['total_reshuffles'] * _cost_mid, 0),
+            'cost_per_reshuffle_usd_range':      '$25–$50 (crane time + fuel + labor)',
         }
 
         # The platform's Additional Output tab reads this block.
@@ -358,7 +365,7 @@ def run(input_data, solver_params=None, extra_arguments=None):
             'schema_version': '1.0',
             'use_case': 'container-yard-stacking-optimization',
             'solver_family': 'classical',
-            'solver_version': '2.3',
+            'solver_version': '2.4',
             'visualizations': [
                 {'name': 'block_heatmap', 'type': 'grid', 'description': 'Top-down per-block container layout (rows × bays). Each cell shows stack height, dominant vessel, weight, and reshuffle indicator.', 'data': block_heatmap},
                 {'name': 'vessel_timeline', 'type': 'timeline', 'description': 'Per-vessel reshuffle forecast in departure order with cumulative deltas and retrieval efficiency.', 'data': vessel_timeline},
@@ -409,7 +416,7 @@ def run(input_data, solver_params=None, extra_arguments=None):
             'optimization_convergence': {'greedy_initial_cost': round(greedy_obj, 2), 'sa_cost': round(best_obj, 2), 'final_optimized_cost': round(best_obj, 2), 'sa_iterations': sa_iterations, 'sa_improvements': sa_improvements},
             'showcase': {'block_heatmap': block_heatmap, 'vessel_timeline': vessel_timeline, 'convergence_chart': convergence_chart, 'summary_dashboard': kpi_dashboard},
             'additional_output': additional_output,
-            'computation_metrics': {'wall_time_s': round(elapsed_s, 3), 'algorithm': 'Greedy_SA_v2.3', 'solver_version': '2.3', 'sa_iterations': sa_iterations, 'sa_improvements': sa_improvements, 'move_strategy': '60pct_swap_40pct_relocate', 'max_iterations_used': params.get('max_iterations')},
+            'computation_metrics': {'wall_time_s': round(elapsed_s, 3), 'algorithm': 'Greedy_SA_v2.4', 'solver_version': '2.4', 'sa_iterations': sa_iterations, 'sa_improvements': sa_improvements, 'move_strategy': '60pct_swap_40pct_relocate', 'max_iterations_used': params.get('max_iterations')},
             'benchmark': {'execution_cost': {'value': 1.0, 'unit': 'credits'}, 'time_elapsed': str(round(elapsed_s, 3)) + 's', 'energy_consumption': 0.0}
         }
         logger.info("Solver completed successfully in " + str(round(elapsed_ms, 1)) + " ms")
